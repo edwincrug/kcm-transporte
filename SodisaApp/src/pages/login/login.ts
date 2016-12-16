@@ -5,7 +5,7 @@ import { Device } from 'ionic-native';
 import { SodisaService } from '../../servicios/servicios';
 import { Page1 } from '../../pages/page1/page1';
 import { Page2 } from '../../pages/page2/page2';
-import { ViajeAsignadoPage} from '../../pages/viaje-asignado/viaje-asignado';
+import { ViajeAsignadoPage } from '../../pages/viaje-asignado/viaje-asignado';
 
 /*
   Generated class for the Login page.
@@ -35,11 +35,10 @@ export class LoginPage {
     validaCredenciales() {
         this.imei = Device.device.uuid;
 
-        this.sodisaService.login(this.username, this.password, '6f90d4bebfae4934')
-            .then(data => {
-                this.credenciales = data;
-                this.interpretaRespuesta(this.credenciales);
-            });
+        this.sodisaService.login(this.username, this.password, this.imei).subscribe(data => {
+            this.credenciales = data;
+            this.interpretaRespuesta(this.credenciales);
+        });
     }
 
     interpretaRespuesta(codigoRespuesta) {

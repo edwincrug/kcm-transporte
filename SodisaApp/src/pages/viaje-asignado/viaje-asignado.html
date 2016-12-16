@@ -16,17 +16,39 @@
 <ion-content>
   <ion-card *ngFor="let viaje of pListaViajeMovil">
     <ion-item>
-      <ion-icon name="md-bus" item-left large></ion-icon>
+      <ion-icon name="locate" item-left large (click)="EnviaMapa()"></ion-icon>
       <h2>Concentrado: {{viaje.pIdConcentradoVc}}</h2>
       <p>Origen: {{viaje.pIdOrigen}} - {{viaje.pOrigenNombre}} </p>
-      <button ion-button icon-only color="secondary" outline icon-left (click)="AceptaViaje()">
+      <ion-grid>
+        <ion-row>
+          <ion-col width-50>
+            <button ion-button icon-only color="primary" outline icon-left (click)="AceptaViaje(viaje.pIdOrigen, viaje.pIdConcentradoVc)">
         Aceptar
         <ion-icon name="checkbox-outline"></ion-icon>
       </button>
-      <button ion-button icon-only color="danger" outline icon-left (click)="RechazaViaje()">
+          </ion-col>
+          <ion-col width-50>
+            <button ion-button icon-only color="danger" outline icon-left (click)="RechazaViaje(viaje.pIdOrigen, viaje.pIdConcentradoVc)">
         Rechazar
         <ion-icon name="close-circle"></ion-icon>
       </button>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col width-50>
+            <button ion-button icon-only color="secondary" outline icon-left (click)="IniciarViaje(viaje.pIdOrigen, viaje.pIdConcentradoVc)">
+        Iniciar
+        <ion-icon name="play"></ion-icon>
+      </button>
+          </ion-col>
+          <ion-col width-50>
+            <button ion-button icon-only color="danger" outline icon-left (click)="TerminarViaje(viaje.pIdOrigen, viaje.pIdConcentradoVc)">
+         Terminar
+        <ion-icon name="square"></ion-icon>
+      </button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </ion-item>
   </ion-card>
 </ion-content>

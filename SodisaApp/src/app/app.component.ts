@@ -6,7 +6,7 @@ import { Page1 } from '../pages/page1/page1';
 import { Page2 } from '../pages/page2/page2';
 import { LoginPage } from '../pages/login/login';
 import { ViajeAsignadoPage } from '../pages/viaje-asignado/viaje-asignado';
-
+import { Http }  from '@angular/http';
 
 @Component({
   templateUrl: 'app.html'

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { NavController, ToastController } from 'ionic-angular';
 import { Device } from 'ionic-native';
+import { Storage } from '@ionic/storage';
 
 import { SodisaService } from '../../servicios/servicios';
 import { Page1 } from '../../pages/page1/page1';
@@ -26,7 +27,7 @@ export class LoginPage {
     public credenciales: any;
     respuesta: any;
 
-    constructor(public navCtrl: NavController, public sodisaService: SodisaService, public toastCtrl: ToastController) { }
+    constructor(public navCtrl: NavController, public sodisaService: SodisaService, public toastCtrl: ToastController, public storage: Storage) { }
 
     ionViewDidLoad() {
         console.log('Hello LoginPage Page');
@@ -70,7 +71,9 @@ export class LoginPage {
         toast.present();
 
         if (codigoRespuesta.pResponseCode == 1) {
-            this.navCtrl.push(ViajeAsignadoPage);
+            this.navCtrl.push(ViajeAsignadoPage, {
+                usuario: codigoRespuesta.pIdOperador
+            });
         }
     }
 }

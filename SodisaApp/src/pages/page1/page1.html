@@ -7,31 +7,15 @@
   </ion-navbar>
 </ion-header>
 
-<ion-content padding>
+<ion-content>
   <div id="map"></div>
-  <!--<ion-grid>
-    <ion-row>
-      <ion-col width-50 class="slot">
-        <ion-card>
-          <ion-card-header>
-            SLOT 1
-          </ion-card-header>
-          <ion-card-content>
-            The British use the term "header", but the American term "head-shot" the English simply refuse to adopt.
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      <ion-col width-50 class="slot">
-        <ion-card>
-          <ion-card-header>
-            SLOT 2
-          </ion-card-header>
-          <ion-card-content>
-            The British use the term "header", but the American term "head-shot" the English simply refuse to adopt.
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>-->
-  <!--<button ion-button secondary menuToggle>Toggle Menu</button>-->
+  <ion-fab top right edge>
+    <button ion-fab color="vibrant" mini><ion-icon name="locate"></ion-icon></button>
+    <ion-fab-list>
+      <button ion-fab (click)="IniciarViaje()"><ion-icon name="{{iconName}}"></ion-icon></button>
+      <button ion-fab (click)="TerminarViaje()"><ion-icon name="square"></ion-icon></button>
+      <button ion-fab><ion-icon name="alert"></ion-icon></button>
+    </ion-fab-list>
+  </ion-fab>
+  <button ion-fab (click)="CambiaIcono()">Cambiar</button>
 </ion-content>

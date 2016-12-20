@@ -54,12 +54,13 @@ export class SodisaService {
             });
     }
 
-    actualizaViaje(idOrigen, idConcentrado, idOperador, idDocumento, idEstatusViaje, idDispositivo): Observable<any> {
+    actualizaViaje(idOrigen, idConcentrado, idOperador, idDocumento, idEstatusViaje, idDispositivo, fecha, coordenadas): Observable<any> {
         let headers = new Headers({ 'Content-Type': 'application/json' });
         let options = new RequestOptions({ headers: headers });
 
         let body = "{ intIdOrigenIn: " + idOrigen + ", strIdConcentradoVc: '" + idConcentrado + "', strIdOperadorVc: '" + idOperador
-            + "', strIdDocumentoVc: " + idDocumento + ", intIdEstatusViajeIn: " + idEstatusViaje + ", strIdDispositivo: '" + idDispositivo + "' }";
+            + "', strIdDocumentoVc: " + idDocumento + ", intIdEstatusViajeIn: " + idEstatusViaje + ", strIdDispositivo: '" + idDispositivo 
+            + "', datFechaEventoDt: '" + fecha + "', strGeoLocalizacionEventoVc: '" +  coordenadas + "' }";
 
         return this.http.post(this.url + 'actualizaEstatusViaje', body, options)
             .map((res: Response) => {

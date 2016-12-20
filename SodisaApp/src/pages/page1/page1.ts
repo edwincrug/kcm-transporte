@@ -1,16 +1,32 @@
 import { Component } from '@angular/core';
-import { NavController, Platform } from 'ionic-angular';
-import { Geolocation, GoogleMap, GoogleMapsEvent, GoogleMapsLatLng, GoogleMapsMarkerOptions, GoogleMapsMarker, Toast } from 'ionic-native';
+import { NavController, Platform, NavParams, ToastController, AlertController } from 'ionic-angular';
+import { Geolocation, GoogleMap, GoogleMapsEvent, GoogleMapsLatLng, GoogleMapsMarkerOptions, GoogleMapsMarker, Toast, Device } from 'ionic-native';
+import { SodisaService } from '../../servicios/servicios';
+import { LoginPage } from '../../pages/login/login';
 
 @Component({
   selector: 'page-page1',
-  templateUrl: 'page1.html'
+  templateUrl: 'page1.html',
+  providers: [SodisaService]
 })
 export class Page1 {
   map: GoogleMap;
   latLng: any;
-  constructor(public navCtrl: NavController, private platform: Platform) {
+  origen: any;
+  concentrado: any;
+  operador: any;
+  private mensaje: string;
+  lat: any;
+  lng: any;
+  iconName: string = 'play';
+
+  constructor(public navCtrl: NavController, private platform: Platform, private navParams: NavParams,
+    public sodisaService: SodisaService, public toastCtrl: ToastController, public alertCtrl: AlertController) {    
     platform.ready().then(() => {
+      this.origen = navParams.get('origen');
+      this.concentrado = navParams.get('concentrado');
+      this.operador = navParams.get('operador');
+
       this.getCurrentPosition();
     });
   }
@@ -19,10 +35,10 @@ export class Page1 {
     Geolocation.getCurrentPosition()
       .then(position => {
 
-        let lat = position.coords.latitude;
-        let lng = position.coords.longitude;
+        this.lat = position.coords.latitude;
+        this.lng = position.coords.longitude;
 
-        this.latLng = new GoogleMapsLatLng(lat, lng)
+        this.latLng = new GoogleMapsLatLng(this.lat, this.lng)
 
         this.loadMap();
       });
@@ -33,7 +49,7 @@ export class Page1 {
       'backgroundColor': 'white',
       'controls': {
         'compass': true,
-        'myLocationButton': true,
+        'myLocationButton': false,
         'indoorPicker': true,
         'zoom': true,
       },
@@ -81,5 +97,111 @@ export class Page1 {
         }
       );
     }
+  }
+
+  IniciarViaje() {
+    Geolocation.getCurrentPosition()
+      .then(position => {
+
+        this.lat = position.coords.latitude;
+        this.lng = position.coords.longitude;
+      });
+
+    let fecha = new Date();
+    let fechaEnviada = fecha.getFullYear() + '-' + (fecha.getMonth() + 1) + '-' + fecha.getDate() + ' ' + fecha.getHours() + ':' + fecha.getMinutes();
+    let coordenadas = this.lat + ',' + this.lng;
+    
+    alert(this.origen);
+    alert(this.concentrado);
+    alert(this.operador);
+    alert(Device.device.uuid);
+    alert(fechaEnviada);
+    alert(coordenadas);
+    
+    this.sodisaService.actualizaViaje(this.origen, this.concentrado, this.operador, 0, 5, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
+      if (data.pResponseCode == 1) {
+        // this.iconName = 'pause';
+        let alert = this.alertCtrl.create({
+          subTitle: 'Viaje Iniciado!',
+          buttons: ['OK']
+        });
+        alert.present();
+      }
+      else {
+        this.interpretaRespuesta(data);
+      }
+
+    });
+  }
+
+  TerminarViaje() {
+    Geolocation.getCurrentPosition()
+      .then(position => {
+
+        this.lat = position.coords.latitude;
+        this.lng = position.coords.longitude;
+      });
+
+    let fecha = new Date();
+    let fechaEnviada = fecha.getFullYear() + '-' + (fecha.getMonth() + 1) + '-' + fecha.getDate() + ' ' + fecha.getHours() + ':' + fecha.getMinutes();
+    let coordenadas = this.lat + ',' + this.lng;
+
+    this.sodisaService.actualizaViaje(this.origen, this.concentrado, this.operador, 0, 6, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
+      if (data.pResponseCode == 1) {
+        let alert = this.alertCtrl.create();
+        alert.setTitle('Viaje Terminado');
+        alert.addButton('OK');
+        alert.present();
+      }
+      else {
+        this.interpretaRespuesta(data);
+      }
+    });
+  }
+
+  interpretaRespuesta(codigoRespuesta) {
+    switch (codigoRespuesta.pResponseCode) {
+      case -1:
+        this.mensaje = "Usuario no registrado";
+        break;
+      case -2:
+        this.mensaje = "Más de un dispositivo asignado";
+        break;
+      case -3:
+        this.mensaje = "Credenciales incorrectas";
+        break;
+      case -4:
+        this.mensaje = "Dispositivo no asignado";
+        break;
+      case -5:
+        this.mensaje = "La sesión expiro";
+        break;
+    }
+
+    let toast = this.toastCtrl.create({
+      message: this.mensaje,
+      duration: 2000,
+      position: 'middle'
+    });
+    toast.present();
+
+    if (codigoRespuesta.pResponseCode == 5) {
+      this.navCtrl.push(LoginPage);
+    }
+  }
+
+  CambiaIcono() {
+    let alert = this.alertCtrl.create();
+    if (this.iconName == 'play') {
+      this.iconName = 'pause';
+      alert.setTitle('Viaje Pausado');
+    }
+    else {
+      this.iconName = 'play';
+      alert.setTitle('Viaje Iniciado');
+    }
+
+    alert.addButton('OK');
+    alert.present();
   }
 }

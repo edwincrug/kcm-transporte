@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, Platform, ToastController, NavParams } from 'ionic-angular';
+import { NavController, Platform, ToastController, NavParams, AlertController } from 'ionic-angular';
 import { SodisaService } from '../../servicios/servicios';
 import { Device } from 'ionic-native';
 import { Storage } from '@ionic/storage';
@@ -37,14 +37,18 @@ export class ViajeAsignadoPage {
   pTipoViajeNombre: string;
   pIdOrigen: string;
   llamada: any;
-  private mensaje: string;
+  mensaje: string;
+  muestraRechazo: boolean = false;
+  testRadioOpen: boolean;
+  idRechazoSelected;
 
 
   constructor(public navCtrl: NavController, private platform: Platform, public sodisaService: SodisaService, public storage: Storage,
-    public toastCtrl: ToastController, private navParams: NavParams) {
+    public toastCtrl: ToastController, private navParams: NavParams, public alertCtrl: AlertController) {
     console.log('Inicia Viajes Asignados');
+
+    this.username = navParams.get('usuario');
     this.obtieneViajesAsignados();
-    this.imei = Device.device.uuid;
   }
 
   ionViewDidLoad() {
@@ -55,7 +59,7 @@ export class ViajeAsignadoPage {
   obtieneViajesAsignados() {
     this.imei = Device.device.uuid;
 
-    this.sodisaService.viajesAsignados('C55163', this.imei)
+    this.sodisaService.viajesAsignados(this.username, Device.device.uuid)
       .then(data => {
         this.viajes = data;
         if (this.viajes.pResponseCode == 1) {
@@ -94,7 +98,7 @@ export class ViajeAsignadoPage {
   AceptaViaje(idOrigen, idConcentrado) {
     this.imei = Device.device.uuid;
 
-    this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.pIdOperador, 0, 3, this.imei).subscribe(data => {
+    this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.username, 0, 3, this.imei).subscribe(data => {
       this.llamada = data;
 
       if (this.llamada.pResponseCode == 1) {
@@ -104,65 +108,12 @@ export class ViajeAsignadoPage {
           position: 'middle'
         });
         toast.present();
-      }
-      else {
-        this.interpretaRespuesta(this.llamada);
-      }
-    });
-  }
 
-  RechazaViaje(idOrigen, idConcentrado) {
-    this.imei = Device.device.uuid;
-
-    this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.pIdOperador, 1, 4, this.imei).subscribe(data => {
-      this.llamada = data;
-      if (this.llamada.pResponseCode == 1) {
-        let toast = this.toastCtrl.create({
-          message: 'Viaje Rechazado',
-          duration: 2000,
-          position: 'middle'
+        this.navCtrl.push(Page1, {
+          origen: idOrigen,
+          concentrado: idConcentrado,
+          operador: this.username
         });
-        toast.present();
-      }
-      else {
-        this.interpretaRespuesta(this.llamada);
-      }
-
-    });
-  }
-
-  IniciarViaje(idOrigen, idConcentrado) {
-    this.imei = Device.device.uuid;
-
-    this.sodisaService.actualizaViaje(idOrigen, idConcentrado, this.pIdOperador, 0, 5, this.imei).subscribe(data => {
-      this.llamada = data;
-      if (this.llamada.pResponseCode == 1) {
-        let toast = this.toastCtrl.create({
-          message: 'Viaje Iniciado',
-          duration: 2000,
-          position: 'middle'
-        });
-        toast.present();
-      }
-      else {
-        this.interpretaRespuesta(this.llamada);
-      }
-
-    });
-  }
-
-  TerminarViaje(idOrigen, idConcentrado) {
-    this.imei = Device.device.uuid;
-
-    this.sodisaService.actualizaViaje(idOrigen, idConcentrado, this.pIdOperador, 0, 6, this.imei).subscribe(data => {
-      this.llamada = data;
-      if (this.llamada.pResponseCode == 1) {
-        let toast = this.toastCtrl.create({
-          message: 'Viaje Terminado',
-          duration: 2000,
-          position: 'middle'
-        });
-        toast.present();
       }
       else {
         this.interpretaRespuesta(this.llamada);
@@ -206,5 +157,72 @@ export class ViajeAsignadoPage {
     else if (codigoRespuesta.pResponseCode == 5) {
       this.navCtrl.push(LoginPage);
     }
+  }
+
+  RechazaViaje(idOrigen, idConcentrado) {
+    this.imei = Device.device.uuid;
+    let alert = this.alertCtrl.create();
+    alert.setTitle('Motivos de Rechazo');
+
+    alert.addInput({
+      type: 'radio',
+      label: 'Salud del operador',
+      value: '1',
+      checked: false
+    });
+
+    alert.addInput({
+      type: 'radio',
+      label: 'Día de descanso',
+      value: '2',
+      checked: false
+    });
+
+    alert.addInput({
+      type: 'radio',
+      label: 'Negativa del Operador',
+      value: '3',
+      checked: false
+    });
+
+    alert.addButton('Cerrar');
+    alert.addButton({
+      text: 'Aceptar',
+      handler: data => {
+        this.testRadioOpen = false;
+        this.idRechazoSelected = data;
+
+        if (this.idRechazoSelected != null) {
+          this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.pIdOperador, this.idRechazoSelected, 4, this.imei).subscribe(data => {
+            this.llamada = data;
+            if (this.llamada.pResponseCode == 1) {
+              let toast = this.toastCtrl.create({
+                message: 'Viaje Rechazado',
+                duration: 2000,
+                position: 'middle'
+              });
+              toast.present();
+            }
+            else {
+              this.interpretaRespuesta(this.llamada);
+            }
+
+          });
+        }
+        else {
+          let toast = this.toastCtrl.create({
+            message: 'Debe seleccionar un motivo de rechazo',
+            duration: 2500,
+            position: 'middle'
+          });
+          toast.present();
+        }
+
+      }
+    });
+
+    alert.present();
+
+
   }
 }

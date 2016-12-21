@@ -21,7 +21,7 @@ export class Page1 {
   iconName: string = 'play';
 
   constructor(public navCtrl: NavController, private platform: Platform, private navParams: NavParams,
-    public sodisaService: SodisaService, public toastCtrl: ToastController, public alertCtrl: AlertController) {    
+    public sodisaService: SodisaService, public toastCtrl: ToastController, public alertCtrl: AlertController) {
     platform.ready().then(() => {
       this.origen = navParams.get('origen');
       this.concentrado = navParams.get('concentrado');
@@ -110,14 +110,7 @@ export class Page1 {
     let fecha = new Date();
     let fechaEnviada = fecha.getFullYear() + '-' + (fecha.getMonth() + 1) + '-' + fecha.getDate() + ' ' + fecha.getHours() + ':' + fecha.getMinutes();
     let coordenadas = this.lat + ',' + this.lng;
-    
-    alert(this.origen);
-    alert(this.concentrado);
-    alert(this.operador);
-    alert(Device.device.uuid);
-    alert(fechaEnviada);
-    alert(coordenadas);
-    
+
     this.sodisaService.actualizaViaje(this.origen, this.concentrado, this.operador, 0, 5, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
       if (data.pResponseCode == 1) {
         // this.iconName = 'pause';
@@ -148,9 +141,10 @@ export class Page1 {
 
     this.sodisaService.actualizaViaje(this.origen, this.concentrado, this.operador, 0, 6, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
       if (data.pResponseCode == 1) {
-        let alert = this.alertCtrl.create();
-        alert.setTitle('Viaje Terminado');
-        alert.addButton('OK');
+        let alert = this.alertCtrl.create({
+          subTitle: 'Viaje Terminado!',
+          buttons: ['OK']
+        });
         alert.present();
       }
       else {
@@ -203,5 +197,38 @@ export class Page1 {
 
     alert.addButton('OK');
     alert.present();
+  }
+
+  showDataStartTravel() {
+    let prompt = this.alertCtrl.create({
+      title: 'Iniciar Viaje',
+      message: "Ingrese los siguientes datos: ",
+      cssClass: 'encima',
+      inputs: [
+        {
+          name: 'Odómetro',
+          placeholder: 'Odómetro'
+        },
+        {
+          name: 'Remolque',
+          placeholder: 'Remolque'
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          handler: data => {
+            console.log('Cancel clicked');
+          }
+        },
+        {
+          text: 'Iniciar',
+          handler: data => {
+            console.log('Saved clicked');
+          }
+        }
+      ]
+    });
+    prompt.present();
   }
 }

@@ -8,14 +8,14 @@
 </ion-header>
 
 <ion-content>
-  <div id="map"></div>
-  <ion-fab top right edge>
+  <!--<div id="map"></div>-->
+  <ion-fab right top edge>
     <button ion-fab color="vibrant" mini><ion-icon name="locate"></ion-icon></button>
-    <ion-fab-list>
+    <ion-fab-list side="right">
       <button ion-fab (click)="IniciarViaje()"><ion-icon name="{{iconName}}"></ion-icon></button>
       <button ion-fab (click)="TerminarViaje()"><ion-icon name="square"></ion-icon></button>
       <button ion-fab><ion-icon name="alert"></ion-icon></button>
     </ion-fab-list>
   </ion-fab>
-  <button ion-fab (click)="CambiaIcono()">Cambiar</button>
+
 </ion-content>

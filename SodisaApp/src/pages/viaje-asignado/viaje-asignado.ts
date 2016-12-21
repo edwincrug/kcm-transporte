@@ -58,7 +58,7 @@ export class ViajeAsignadoPage {
 
   obtieneViajesAsignados() {
     this.imei = Device.device.uuid;
-
+    
     this.sodisaService.viajesAsignados(this.username, Device.device.uuid)
       .then(data => {
         this.viajes = data;
@@ -159,7 +159,7 @@ export class ViajeAsignadoPage {
     }
   }
 
-  RechazaViaje(idOrigen, idConcentrado) {
+  muestraMotivos(idOrigen, idConcentrado) {
     this.imei = Device.device.uuid;
     let alert = this.alertCtrl.create();
     alert.setTitle('Motivos de Rechazo');
@@ -193,29 +193,7 @@ export class ViajeAsignadoPage {
         this.idRechazoSelected = data;
 
         if (this.idRechazoSelected != null) {
-          this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.pIdOperador, this.idRechazoSelected, 4, this.imei).subscribe(data => {
-            this.llamada = data;
-            if (this.llamada.pResponseCode == 1) {
-              let toast = this.toastCtrl.create({
-                message: 'Viaje Rechazado',
-                duration: 2000,
-                position: 'middle'
-              });
-              toast.present();
-            }
-            else {
-              this.interpretaRespuesta(this.llamada);
-            }
-
-          });
-        }
-        else {
-          let toast = this.toastCtrl.create({
-            message: 'Debe seleccionar un motivo de rechazo',
-            duration: 2500,
-            position: 'middle'
-          });
-          toast.present();
+          this.RechazaViaje(idOrigen, idConcentrado);
         }
 
       }
@@ -224,5 +202,22 @@ export class ViajeAsignadoPage {
     alert.present();
 
 
+  }
+
+  RechazaViaje(idOrigen, idConcentrado) {
+    this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.pIdOperador, this.idRechazoSelected, 4, Device.device.uuid).subscribe(data => {
+      if (data.pResponseCode == 1) {
+        let toast = this.toastCtrl.create({
+          message: 'Viaje Rechazado',
+          duration: 2000,
+          position: 'middle'
+        });
+        toast.present();
+      }
+      else {
+        this.interpretaRespuesta(data);
+      }
+
+    });
   }
 }

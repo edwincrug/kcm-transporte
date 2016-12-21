@@ -1,5 +1,5 @@
-page-page1 {
-ion-content{
+page-page1 {  
+  ion-content{
     background: rgb(229, 227, 223);
     #map {
       width: 100%;
@@ -9,9 +9,6 @@ ion-content{
       &.show-map{
         opacity: 1;
       }
-    }
-    #slot{
-      width: 100%;
     }
   }
 }

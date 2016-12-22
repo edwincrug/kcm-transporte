@@ -9,26 +9,29 @@
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Listado Viajes Asignados</ion-title>
+    <ion-title>Viajes Asignados</ion-title>
   </ion-navbar>
+  <ion-toolbar>
+    <ion-title>{{nombre}} <br> Eco:{{pNumeroEconomicoTractocamion}}</ion-title>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-card *ngFor="let viaje of pListaViajeMovil">
+  <ion-card *ngFor="let viaje of pListaViajeMovil; let i = index">
     <ion-item>
-      <ion-icon name="locate" item-left large (click)="EnviaMapa()"></ion-icon>
+      <!--<ion-icon name="locate" item-left large (click)="EnviaMapa()"></ion-icon>-->
       <h2>Concentrado: {{viaje.pIdConcentradoVc}}</h2>
-      <p>Origen: {{viaje.pIdOrigen}} - {{viaje.pOrigenNombre}} </p>
+      <p>Origen: {{viaje.pIdOrigen}} - {{viaje.pOrigenNombre}} <br> Destino: {{viaje.pViajeMovilDetalle[0].pDestinoNombre}}</p>
       <ion-grid>
         <ion-row>
           <ion-col width-50>
-            <button ion-button icon-only color="primary" outline icon-left (click)="AceptaViaje(viaje.pIdOrigen, viaje.pIdConcentradoVc)">
+            <button ion-button icon-only color="primary" outline icon-left (click)="AceptaViaje(viaje.pIdOrigen, viaje.pIdConcentradoVc, i)">
         Aceptar
         <ion-icon name="checkbox-outline"></ion-icon>
       </button>
           </ion-col>
           <ion-col width-50>
-            <button ion-button icon-only color="danger" outline icon-left (click)="muestraMotivos(viaje.pIdOrigen, viaje.pIdConcentradoVc)">
+            <button ion-button icon-only color="danger" outline icon-left (click)="muestraMotivos(viaje.pIdOrigen, viaje.pIdConcentradoVc, i)">
         Rechazar
         <ion-icon name="close-circle"></ion-icon>
       </button>

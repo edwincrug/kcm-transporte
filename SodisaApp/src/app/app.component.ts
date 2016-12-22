@@ -7,19 +7,23 @@ import { Page2 } from '../pages/page2/page2';
 import { LoginPage } from '../pages/login/login';
 import { ViajeAsignadoPage } from '../pages/viaje-asignado/viaje-asignado';
 import { PerfilPage } from '../pages/perfil/perfil';
-import { Http } from '@angular/http';
+
+import { LocalDataService } from '../providers/local-data-service';
 
 @Component({
-  templateUrl: 'app.html'
+  templateUrl: 'app.html',
+  providers: [LocalDataService]
 })
 export class MyApp {
   @ViewChild(Nav) nav: Nav;
 
-  rootPage: any = LoginPage;
+  rootPage: any = null;
 
   pages: Array<{ title: string, component: any }>;
 
-  constructor(public platform: Platform) {
+  tasks: any[] = [];
+
+  constructor(public platform: Platform, public dataServices: LocalDataService) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -36,6 +40,12 @@ export class MyApp {
       // Here you can do any higher level native things you might need.
       StatusBar.styleDefault();
       Splashscreen.hide();
+
+      this.dataServices.openDatabase()
+        .then(() => this.dataServices.createTables())
+        .then(() => {
+          this.rootPage = LoginPage;
+        });
     });
   }
 
@@ -44,4 +54,5 @@ export class MyApp {
     // we wouldn't want the back button to show in this scenario
     this.nav.setRoot(page.component);
   }
+
 }

@@ -7,6 +7,7 @@ import { Page2 } from '../pages/page2/page2';
 import { LoginPage } from '../pages/login/login';
 import { ViajeAsignadoPage } from '../pages/viaje-asignado/viaje-asignado';
 import { PerfilPage } from '../pages/perfil/perfil';
+import { LocalDataService } from '../providers/local-data-service';
 
 @NgModule({
   declarations: [
@@ -17,7 +18,7 @@ import { PerfilPage } from '../pages/perfil/perfil';
     ViajeAsignadoPage,
     PerfilPage
   ],
-  imports: [
+  imports: [ 
     IonicModule.forRoot(MyApp)
   ],
   bootstrap: [IonicApp],
@@ -29,6 +30,6 @@ import { PerfilPage } from '../pages/perfil/perfil';
     ViajeAsignadoPage,
     PerfilPage
   ],
-  providers: [{provide: ErrorHandler, useClass: IonicErrorHandler}, Storage]
+  providers: [{provide: ErrorHandler, useClass: IonicErrorHandler}, Storage, LocalDataService]
 })
 export class AppModule {}

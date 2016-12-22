@@ -5,11 +5,14 @@
     </button>
     <ion-title>Tracking</ion-title>
   </ion-navbar>
+  <!--<ion-toolbar>
+    <ion-title>{{operador}} - Eco:{{tracto}}</ion-title>
+  </ion-toolbar>-->
 </ion-header>
 
 <ion-content>
-  <!--<div id="map"></div>-->
-  <ion-fab right top edge>
+  <div id="map"></div>
+  <ion-fab left bottom>
     <button ion-fab color="vibrant" mini><ion-icon name="locate"></ion-icon></button>
     <ion-fab-list side="right">
       <button ion-fab (click)="IniciarViaje()"><ion-icon name="{{iconName}}"></ion-icon></button>

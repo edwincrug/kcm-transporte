@@ -60,7 +60,8 @@ export class SodisaService {
 
         let body = "{ intIdOrigenIn: " + idOrigen + ", strIdConcentradoVc: '" + idConcentrado + "', strIdOperadorVc: '" + idOperador
             + "', strIdDocumentoVc: " + idDocumento + ", intIdEstatusViajeIn: " + idEstatusViaje + ", strIdDispositivo: '" + idDispositivo 
-            + "', datFechaEventoDt: '" + fecha + "', strGeoLocalizacionEventoVc: '" +  coordenadas + "' }";
+            + "', datFechaEventoDt: '" + fecha + "', strGeoLocalizacionEventoVc: '" +  coordenadas + "', bytEvidenciaFotrograficaBy: '', "  +
+            "decKilometrajeEventoDc: 10, strIdNumeroEconomicoRemolqueVc: '' }";
 
         return this.http.post(this.url + 'actualizaEstatusViaje', body, options)
             .map((res: Response) => {

@@ -22,6 +22,7 @@ export class ViajeAsignadoPage {
   username: string;
   imei: string;
   viajes: any;
+  listaViajesAsignados: any[] = [];
   respuesta: any;
   pIdDispositivo: string;
   pIdOperador: string;
@@ -41,6 +42,7 @@ export class ViajeAsignadoPage {
   muestraRechazo: boolean = false;
   testRadioOpen: boolean;
   idRechazoSelected;
+  nombre: string;
 
 
   constructor(public navCtrl: NavController, private platform: Platform, public sodisaService: SodisaService, public storage: Storage,
@@ -48,6 +50,7 @@ export class ViajeAsignadoPage {
     console.log('Inicia Viajes Asignados');
 
     this.username = navParams.get('usuario');
+    this.nombre = navParams.get('nombre');
     this.obtieneViajesAsignados();
   }
 
@@ -58,10 +61,12 @@ export class ViajeAsignadoPage {
 
   obtieneViajesAsignados() {
     this.imei = Device.device.uuid;
-    
+
+    // this.sodisaService.viajesAsignados('C55163', 'aa1add0d87db4099')
     this.sodisaService.viajesAsignados(this.username, Device.device.uuid)
       .then(data => {
         this.viajes = data;
+        this.listaViajesAsignados = data.pListaViajeMovil;
         if (this.viajes.pResponseCode == 1) {
           this.asignaVariables();
         }
@@ -72,7 +77,7 @@ export class ViajeAsignadoPage {
             position: 'middle'
           });
           toast.present();
-          if (this.viajes.pResponseCode == -5) {
+          if (this.viajes[0].pResponseCode == -5) {
             this.navCtrl.push(LoginPage);
           }
         }
@@ -95,9 +100,10 @@ export class ViajeAsignadoPage {
     this.pIdOrigen = this.viajes.pIdOrigen;
   }
 
-  AceptaViaje(idOrigen, idConcentrado) {
+  AceptaViaje(idOrigen, idConcentrado, indice) {
     this.imei = Device.device.uuid;
 
+    // this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, 'C55163', 0, 3, 'aa1add0d87db4099').subscribe(data => {
     this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.username, 0, 3, this.imei).subscribe(data => {
       this.llamada = data;
 
@@ -109,10 +115,13 @@ export class ViajeAsignadoPage {
         });
         toast.present();
 
+        this.listaViajesAsignados.splice(indice, 1);
+
         this.navCtrl.push(Page1, {
           origen: idOrigen,
           concentrado: idConcentrado,
-          operador: this.username
+          operador: this.username,
+          tracto: this.pNumeroEconomicoTractocamion
         });
       }
       else {
@@ -159,7 +168,7 @@ export class ViajeAsignadoPage {
     }
   }
 
-  muestraMotivos(idOrigen, idConcentrado) {
+  muestraMotivos(idOrigen, idConcentrado, indice) {
     this.imei = Device.device.uuid;
     let alert = this.alertCtrl.create();
     alert.setTitle('Motivos de Rechazo');
@@ -193,7 +202,7 @@ export class ViajeAsignadoPage {
         this.idRechazoSelected = data;
 
         if (this.idRechazoSelected != null) {
-          this.RechazaViaje(idOrigen, idConcentrado);
+          this.RechazaViaje(idOrigen, idConcentrado, indice);
         }
 
       }
@@ -204,8 +213,9 @@ export class ViajeAsignadoPage {
 
   }
 
-  RechazaViaje(idOrigen, idConcentrado) {
+  RechazaViaje(idOrigen, idConcentrado, indice) {
     this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.pIdOperador, this.idRechazoSelected, 4, Device.device.uuid).subscribe(data => {
+      // this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, 'C55163', this.idRechazoSelected, 4, 'aa1add0d87db4099').subscribe(data => {
       if (data.pResponseCode == 1) {
         let toast = this.toastCtrl.create({
           message: 'Viaje Rechazado',
@@ -213,6 +223,8 @@ export class ViajeAsignadoPage {
           position: 'middle'
         });
         toast.present();
+
+        this.listaViajesAsignados.splice(indice, 1);
       }
       else {
         this.interpretaRespuesta(data);

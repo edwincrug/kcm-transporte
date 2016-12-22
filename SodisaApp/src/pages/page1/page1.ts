@@ -3,6 +3,7 @@ import { NavController, Platform, NavParams, ToastController, AlertController } 
 import { Geolocation, GoogleMap, GoogleMapsEvent, GoogleMapsLatLng, GoogleMapsMarkerOptions, GoogleMapsMarker, Toast, Device } from 'ionic-native';
 import { SodisaService } from '../../servicios/servicios';
 import { LoginPage } from '../../pages/login/login';
+import { ViajeAsignadoPage } from '../../pages/viaje-asignado/viaje-asignado';
 
 @Component({
   selector: 'page-page1',
@@ -19,6 +20,7 @@ export class Page1 {
   lat: any;
   lng: any;
   iconName: string = 'play';
+  tracto: string;
 
   constructor(public navCtrl: NavController, private platform: Platform, private navParams: NavParams,
     public sodisaService: SodisaService, public toastCtrl: ToastController, public alertCtrl: AlertController) {
@@ -26,6 +28,7 @@ export class Page1 {
       this.origen = navParams.get('origen');
       this.concentrado = navParams.get('concentrado');
       this.operador = navParams.get('operador');
+      this.tracto = navParams.get('tracto');
 
       this.getCurrentPosition();
     });
@@ -111,6 +114,13 @@ export class Page1 {
     let fechaEnviada = fecha.getFullYear() + '-' + (fecha.getMonth() + 1) + '-' + fecha.getDate() + ' ' + fecha.getHours() + ':' + fecha.getMinutes();
     let coordenadas = this.lat + ',' + this.lng;
 
+    alert('Origen: ' + this.origen);
+    alert('Concentrado: ' + this.concentrado);
+    alert('Operador: ' + this.operador);
+    alert('Imei: ' + Device.device.uuid);
+    alert('Fecha: ' + fechaEnviada);
+    alert('Coordenadas: ' + coordenadas);
+
     this.sodisaService.actualizaViaje(this.origen, this.concentrado, this.operador, 0, 5, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
       if (data.pResponseCode == 1) {
         // this.iconName = 'pause';
@@ -146,6 +156,8 @@ export class Page1 {
           buttons: ['OK']
         });
         alert.present();
+
+        this.navCtrl.push(ViajeAsignadoPage);
       }
       else {
         this.interpretaRespuesta(data);

@@ -17,39 +17,42 @@
 </ion-header>
 
 <ion-content>
-  <ion-card *ngFor="let viaje of pListaViajeMovil; let i = index">
+  <ion-fab top right edge>
+    <button ion-fab mini (click)="obtieneViajesAsignados()"><ion-icon name="sync"></ion-icon></button>
+  </ion-fab>
+
+  <!--<ion-card *ngFor="let viaje of pListaViajeMovil; let i = index">-->
+  <ion-card *ngFor="let viaje of listaViajesLocales; let i = index">
     <ion-item>
       <!--<ion-icon name="locate" item-left large (click)="EnviaMapa()"></ion-icon>-->
-      <h2>Concentrado: {{viaje.pIdConcentradoVc}}</h2>
-      <p>Origen: {{viaje.pIdOrigen}} - {{viaje.pOrigenNombre}} <br> Destino: {{viaje.pViajeMovilDetalle[0].pDestinoNombre}}</p>
+      <h2>Concentrado: {{viaje.idConcentrado}}</h2>
+      <p>Origen: {{viaje.idOrigen}} - {{viaje.origenNombre}} <br> Destino: DestinoDummy</p>
       <ion-grid>
         <ion-row>
           <ion-col width-50>
-            <button ion-button icon-only color="primary" outline icon-left (click)="AceptaViaje(viaje.pIdOrigen, viaje.pIdConcentradoVc, i)">
+            <button *ngIf="viaje.idEstatus == 2" ion-button icon-only color="primary" outline icon-left (click)="AceptaViaje(viaje.idViaje, viaje.idOrigen, viaje.idConcentrado, i)">
         Aceptar
         <ion-icon name="checkbox-outline"></ion-icon>
       </button>
+
+            <button *ngIf="viaje.idEstatus == 3" ion-button icon-only color="secondary" outline icon-left (click)="IniciarViaje(viaje.idViaje, viaje.idOrigen, viaje.idConcentrado, i)">
+        Iniciar Viaje
+        <ion-icon name="play"></ion-icon>
+      </button>
+
+            <button *ngIf="viaje.idEstatus == 5" ion-button icon-only color="dark" outline icon-left (click)="TerminarViaje(viaje.idViaje, viaje.idOrigen, viaje.idConcentrado, i)">
+        Terminar Viaje
+        <ion-icon name="square"></ion-icon>
+      </button>
           </ion-col>
           <ion-col width-50>
-            <button ion-button icon-only color="danger" outline icon-left (click)="muestraMotivos(viaje.pIdOrigen, viaje.pIdConcentradoVc, i)">
+            <button *ngIf="viaje.idEstatus == 2" ion-button icon-only color="danger" outline icon-left (click)="muestraMotivos(viaje.idViaje, viaje.idOrigen, viaje.idConcentrado, i)">
         Rechazar
         <ion-icon name="close-circle"></ion-icon>
       </button>
           </ion-col>
         </ion-row>
         <ion-row>
-          <!--<ion-col width-50>
-            <button ion-button icon-only color="secondary" outline icon-left (click)="IniciarViaje(viaje.pIdOrigen, viaje.pIdConcentradoVc)">
-        Iniciar
-        <ion-icon name="play"></ion-icon>
-      </button>
-          </ion-col>-->
-          <!--<ion-col width-50>
-            <button ion-button icon-only color="danger" outline icon-left (click)="TerminarViaje(viaje.pIdOrigen, viaje.pIdConcentradoVc)">
-         Terminar
-        <ion-icon name="square"></ion-icon>
-      </button>
-          </ion-col>-->
         </ion-row>
       </ion-grid>
     </ion-item>

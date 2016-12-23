@@ -38,8 +38,8 @@ export class LoginPage {
 
     validaCredenciales() {
         this.imei = Device.device.uuid;
-        // this.sodisaService.login('C55163', 'C55163', 'aa1add0d87db4099').subscribe(data => {
-        this.sodisaService.login(this.username, this.password, this.imei).subscribe(data => {
+        this.sodisaService.login('C55163', 'C55163', 'aa1add0d87db4099').subscribe(data => {
+            // this.sodisaService.login(this.username, this.password, this.imei).subscribe(data => {
             this.credenciales = data;
             this.interpretaRespuesta(this.credenciales);
         });
@@ -75,24 +75,26 @@ export class LoginPage {
 
         if (codigoRespuesta.pResponseCode == 1) {
 
-            this.dataServices.openDatabase()
-                .then(() => this.dataServices.checkViajesAsignados().then(response => {
-                    alert('Viajes Asignados: ' + response.length);
-                    // .then(() => this.dataServices.checkUsuario(codigoRespuesta.pIdOperador).then(response => {
-                    //if(response.length == 0) --Registra en BD
+            // this.dataServices.openDatabase()
+            //     .then(() => this.dataServices.checkViajesAsignados().then(response => {
+            //         // .then(() => this.dataServices.checkUsuario(codigoRespuesta.pIdOperador).then(response => {
+            //         //if(response.length == 0) --Registra en BD
 
-                    this.navCtrl.push(ViajeAsignadoPage, {
-                        usuario: codigoRespuesta.pIdOperador,
-                        nombre: codigoRespuesta.pOperadorNombre
-                    });
-
-
-                }).catch(error => {
-                    alert('Error: ' + error.ToString());
-                }));
+            //         this.navCtrl.push(ViajeAsignadoPage, {
+            //             usuario: codigoRespuesta.pIdOperador,
+            //             nombre: codigoRespuesta.pOperadorNombre
+            //         });
 
 
+            //     }).catch(error => {
+            //         alert('Error: ' + error.ToString());
+            //     }));
 
+
+            this.navCtrl.push(ViajeAsignadoPage, {
+                usuario: codigoRespuesta.pIdOperador,
+                nombre: codigoRespuesta.pOperadorNombre
+            });
 
         }
     }

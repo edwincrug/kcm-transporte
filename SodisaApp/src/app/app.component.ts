@@ -42,7 +42,9 @@ export class MyApp {
       Splashscreen.hide();
 
       this.dataServices.openDatabase()
-        .then(() => this.dataServices.createTables())
+        .then(() => this.dataServices.createTableUsuario())
+        .then(() => this.dataServices.createTableViaje())
+        .then(() => this.dataServices.createTableViajeDetalle())
         .then(() => {
           this.rootPage = LoginPage;
         });

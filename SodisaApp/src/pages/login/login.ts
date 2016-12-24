@@ -38,8 +38,8 @@ export class LoginPage {
 
     validaCredenciales() {
         this.imei = Device.device.uuid;
-        this.sodisaService.login('C55163', 'C55163', 'aa1add0d87db4099').subscribe(data => {
-            // this.sodisaService.login(this.username, this.password, this.imei).subscribe(data => {
+        // this.sodisaService.login('C55163', 'C55163', 'aa1add0d87db4099').subscribe(data => {
+        this.sodisaService.login(this.username, this.password, this.imei).subscribe(data => {
             this.credenciales = data;
             this.interpretaRespuesta(this.credenciales);
         });
@@ -93,7 +93,8 @@ export class LoginPage {
 
             this.navCtrl.push(ViajeAsignadoPage, {
                 usuario: codigoRespuesta.pIdOperador,
-                nombre: codigoRespuesta.pOperadorNombre
+                nombre: codigoRespuesta.pOperadorNombre,
+                eco: codigoRespuesta.pNumeroEconomicoTractocamion
             });
 
         }

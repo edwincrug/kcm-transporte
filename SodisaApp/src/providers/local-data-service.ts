@@ -34,7 +34,7 @@ export class LocalDataService {
   }
 
   createTableViaje() {
-    let sql = 'CREATE TABLE IF NOT EXISTS Viaje(idViaje INTEGER PRIMARY KEY AUTOINCREMENT, idOrigen INTEGER, origenNombre TEXT, idConcentrado TEXT, tipoViaje INTEGER, economico TEXT, odometro INTEGER, idEstatus INTEGER, idUsuario INTEGER, idRechazo INTEGER, geolocalizacion TEXT); ';
+    let sql = 'CREATE TABLE IF NOT EXISTS Viaje(idViaje INTEGER PRIMARY KEY AUTOINCREMENT, idOrigen INTEGER, origenNombre TEXT, idConcentrado TEXT, tipoViaje INTEGER, economico TEXT, odometro INTEGER, idEstatus INTEGER, idUsuario INTEGER, idRechazo INTEGER, geolocalizacion TEXT, destino TEXT); ';
     return this.db.executeSql(sql, []);
   }
 
@@ -86,23 +86,80 @@ export class LocalDataService {
 
   insertaViajesAsignados(travels) {
     for (let x = 0; x < travels.length; x++) {
-      this.sqlQuery = "INSERT INTO Viaje (idOrigen, origenNombre, idConcentrado, tipoViaje, economico, odometro, idEstatus, idUsuario, idRechazo, geolocalizacion) VALUES (" +
-        travels[x].pIdOrigen + ", '" +
-        travels[x].pOrigenNombre + "', '" +
-        travels[x].pIdConcentradoVc + "', " +
-        travels[x].pIdTipoViaje + ", '" +
-        travels[x].pNumeroEconomicoRemolque + "', " +
-        travels[x].pOdometro + ", " +
-        travels[x].pIdEstatus + ", 1, 0, '" +
-        travels[x].pGeoLocalizacionOrigen + "'); ";
+      let evitaDuplicadosQuery = "SELECT COUNT(*) AS Existe FROM Viaje WHERE idOrigen = ? AND idConcentrado = ?";
+      this.db.executeSql(evitaDuplicadosQuery, [travels[x].pIdOrigen, travels[x].pIdConcentradoVc]).then(respuesta => {
+        let existe = respuesta.rows.item(0).Existe;
+        if (existe == 0) {
 
-      this.db.executeSql(this.sqlQuery, []);
+          //Recupero los distintos destinos
+          let idDestinos: any[] = [];
+          let destinos: string = "";
+
+          for (let y = 0; y < travels[x].pViajeMovilDetalle.length; y++) {
+            if (y == 0) {
+              idDestinos.push(travels[x].pViajeMovilDetalle[y].pIdDestino);
+              destinos += travels[x].pViajeMovilDetalle[y].pDestinoNombre + ", ";
+            }
+            else {
+              let encontrado = destinos.indexOf(travels[x].pViajeMovilDetalle[y].pIdDestino);
+              if (encontrado != -1) {
+                idDestinos.push(travels[x].pViajeMovilDetalle[y].pIdDestino);
+                destinos += travels[x].pViajeMovilDetalle[y].pDestinoNombre + ", ";
+              }
+            }
+          }
+
+          destinos = destinos.substring(0, destinos.length - 2);
+
+          this.sqlQuery = "INSERT INTO Viaje (idOrigen, origenNombre, idConcentrado, tipoViaje, economico, odometro, idEstatus, idUsuario, idRechazo, geolocalizacion, destino) VALUES (" +
+            travels[x].pIdOrigen + ", '" +
+            travels[x].pOrigenNombre + "', '" +
+            travels[x].pIdConcentradoVc + "', " +
+            travels[x].pIdTipoViaje + ", '" +
+            travels[x].pNumeroEconomicoRemolque + "', " +
+            travels[x].pOdometro + ", " +
+            travels[x].pIdEstatus + ", 1, 0, '" +
+            travels[x].pGeoLocalizacionOrigen + "', '" +
+            destinos + "'); ";
+
+          this.db.executeSql(this.sqlQuery, []);
+
+          //Recupero el identity
+          this.sqlQuery = "SELECT MAX(idViaje) As Identificador FROM viaje";
+          this.db.executeSql(this.sqlQuery, []).then(rowIdentity => {
+            let identity = rowIdentity.rows.item(0).Identificador;
+
+            for (let y = 0; y < travels[x].pViajeMovilDetalle.length; y++) {
+
+              let date = new Date(parseInt(travels[x].pViajeMovilDetalle[y].pFechaDocumentoDt.substr(6)));
+              let dia: string = date.getDate().toString();
+              if (dia.length == 1) {
+                dia = '0' + date.getDate();
+              }
+
+              let fechaDoc = dia + '-' + (date.getMonth() + 1) + '-' + date.getFullYear() + ' ' + date.getHours() + ':' + date.getMinutes();
+
+              this.sqlQuery = "INSERT INTO ViajeDetalle(idViaje, idDestino, destinoNombre, idEstatus, idDocumento, fechaDocumento, geolocalizacion) VALUES (" +
+                identity + ", " +
+                travels[x].pViajeMovilDetalle[y].pIdDestino + ", '" +
+                travels[x].pViajeMovilDetalle[y].pDestinoNombre + "', " +
+                travels[x].pViajeMovilDetalle[y].pIdEstatus + ", '" +
+                travels[x].pViajeMovilDetalle[y].pIdDocumentoVc + "', '" +
+                fechaDoc + "', '" +
+                travels[x].pViajeMovilDetalle[y].pGeoLocalizacionDestino + "'); ";
+
+              this.db.executeSql(this.sqlQuery, []);
+            }
+          });
+        }
+        // else {
+        //   alert('Viaje Duplicado');
+        // }
+      });
     }
-    // let sql = "INSERT INTO Viaje (idOrigen, origenNombre, idConcentrado, tipoViaje, economico, odometro, idEstatus) VALUES (1, 'Aguscalientes', 'CON1', 1, 'ECO-1', 20, 2); ";
-    // return this.db.executeSql(sql, []);
   }
 
-  actualizaViajeLocal(idEstatus, idRechazo, idViaje){
+  actualizaViajeLocal(idEstatus, idRechazo, idViaje) {
     let sql = "UPDATE Viaje SET idEstatus = " + idEstatus + ", idRechazo = " + idRechazo + " WHERE idViaje = ?";
     return this.db.executeSql(sql, [idViaje]);
   }
@@ -119,5 +176,17 @@ export class LocalDataService {
 
     sql = "INSERT INTO Viaje (idOrigen, origenNombre, idConcentrado, tipoViaje, economico, odometro, idEstatus) VALUES (4, 'Durango', 'CON4', 2, 'ECO-4', 20, 4); ";
     this.db.executeSql(sql, []);
+  }
+
+  getUnique = function (destinos) {
+    var u = {}, a = [];
+    for (var i = 0, l = destinos.length; i < l; ++i) {
+      if (u.hasOwnProperty(destinos[i])) {
+        continue;
+      }
+      a.push(this[i]);
+      u[this[i]] = 1;
+    }
+    return a;
   }
 }

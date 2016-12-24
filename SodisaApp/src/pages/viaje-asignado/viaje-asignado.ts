@@ -44,6 +44,7 @@ export class ViajeAsignadoPage {
   testRadioOpen: boolean;
   idRechazoSelected;
   nombre: string;
+  economico: string;
   listaViajesLocales: any[] = [];
   lat: any;
   lng: any;
@@ -54,7 +55,13 @@ export class ViajeAsignadoPage {
 
     this.username = navParams.get('usuario');
     this.nombre = navParams.get('nombre');
+    this.economico = navParams.get('eco');
 
+    Geolocation.getCurrentPosition()
+      .then(position => {
+        this.lat = position.coords.latitude;
+        this.lng = position.coords.longitude;
+      });
   }
 
   ionViewDidLoad() {
@@ -68,8 +75,8 @@ export class ViajeAsignadoPage {
   obtieneViajesAsignados() {
     this.imei = Device.device.uuid;
 
-    this.sodisaService.viajesAsignados('C55163', 'aa1add0d87db4099')
-      // this.sodisaService.viajesAsignados(this.username, Device.device.uuid)
+    // this.sodisaService.viajesAsignados('C55163', 'aa1add0d87db4099')
+    this.sodisaService.viajesAsignados(this.username, Device.device.uuid)
       .then(data => {
         this.viajes = data;
         this.listaViajesAsignados = data.pListaViajeMovil;
@@ -115,8 +122,8 @@ export class ViajeAsignadoPage {
         exito = "1";
       }));
 
-    this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, 'C55163', 0, 3, 'aa1add0d87db4099').subscribe(data => {
-      // this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.username, 0, 3, this.imei).subscribe(data => {
+    // this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, 'C55163', 0, 3, 'aa1add0d87db4099').subscribe(data => {
+    this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.username, 0, 3, this.imei).subscribe(data => {
       this.llamada = data;
       if (this.llamada.pResponseCode == 1) {
         // this.listaViajesAsignados.splice(indice, 1);
@@ -249,8 +256,8 @@ export class ViajeAsignadoPage {
         exitoRechazoViaje = "1";
       }));
 
-    // this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.pIdOperador, this.idRechazoSelected, 4, Device.device.uuid).subscribe(data => {
-    this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, 'C55163', this.idRechazoSelected, 4, 'aa1add0d87db4099').subscribe(data => {
+    this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.username, this.idRechazoSelected, 4, Device.device.uuid).subscribe(data => {
+      // this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, 'C55163', this.idRechazoSelected, 4, 'aa1add0d87db4099').subscribe(data => {
       if (data.pResponseCode == 1) {
         let toast = this.toastCtrl.create({
           message: 'Viaje Rechazado',
@@ -324,8 +331,8 @@ export class ViajeAsignadoPage {
         exitoIniciaViaje = "1";
       }));
 
-    // this.sodisaService.actualizaViaje(idViaje, idConcentrado, 'C55163', 0, 5, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
-    this.sodisaService.actualizaViaje(idViaje, idConcentrado, 'C55163', 0, 5, 'aa1add0d87db4099', fechaEnviada, coordenadas).subscribe(data => {
+    this.sodisaService.actualizaViaje(idOrigen, idConcentrado, this.username, 0, 5, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
+      // this.sodisaService.actualizaViaje(idOrigen, idConcentrado, 'C55163', 0, 5, 'aa1add0d87db4099', fechaEnviada, coordenadas).subscribe(data => {
       if (data.pResponseCode == 1) {
         let alert = this.alertCtrl.create({
           subTitle: 'Viaje Iniciado!',
@@ -372,8 +379,8 @@ export class ViajeAsignadoPage {
         exitoTerminaViaje = "1";
       }));
 
-    // this.sodisaService.actualizaViaje(idOrigen, idConcentrado, this.operador, 0, 6, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
-    this.sodisaService.actualizaViaje(idOrigen, idConcentrado, 'C55163', 0, 6, 'aa1add0d87db4099', fechaEnviada, coordenadas).subscribe(data => {
+    this.sodisaService.actualizaViaje(idOrigen, idConcentrado, this.username, 0, 6, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
+      // this.sodisaService.actualizaViaje(idOrigen, idConcentrado, 'C55163', 0, 6, 'aa1add0d87db4099', fechaEnviada, coordenadas).subscribe(data => {
       if (data.pResponseCode == 1) {
         let alert = this.alertCtrl.create({
           subTitle: 'Viaje Terminado!',

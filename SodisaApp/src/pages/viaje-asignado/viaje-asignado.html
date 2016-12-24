@@ -12,7 +12,7 @@
     <ion-title>Viajes Asignados</ion-title>
   </ion-navbar>
   <ion-toolbar>
-    <ion-title>{{nombre}} <br> Eco:{{pNumeroEconomicoTractocamion}}</ion-title>
+    <ion-title>{{nombre}} <br> Eco:{{economico}}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -26,7 +26,7 @@
     <ion-item>
       <!--<ion-icon name="locate" item-left large (click)="EnviaMapa()"></ion-icon>-->
       <h2>Concentrado: {{viaje.idConcentrado}}</h2>
-      <p>Origen: {{viaje.idOrigen}} - {{viaje.origenNombre}} <br> Destino: DestinoDummy</p>
+      <p>Origen: {{viaje.idOrigen}} - {{viaje.origenNombre}} <br> Destino: {{viaje.destino}}</p>
       <ion-grid>
         <ion-row>
           <ion-col width-50>

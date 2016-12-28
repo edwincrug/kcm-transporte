@@ -17,16 +17,16 @@
 </ion-header>
 
 <ion-content>
-  <ion-fab top right edge>
-    <button ion-fab mini (click)="obtieneViajesAsignados()"><ion-icon name="sync"></ion-icon></button>
-  </ion-fab>
-
   <!--<ion-card *ngFor="let viaje of pListaViajeMovil; let i = index">-->
   <ion-card *ngFor="let viaje of listaViajesLocales; let i = index">
+    <ion-card-header>
+      Concentrado: {{viaje.idConcentrado}}
+    </ion-card-header>
+    <ion-card-content>
+      Origen: {{viaje.idOrigen}} - {{viaje.origenNombre}} <br> Destino: {{viaje.destino}}
+    </ion-card-content>
     <ion-item>
       <!--<ion-icon name="locate" item-left large (click)="EnviaMapa()"></ion-icon>-->
-      <h2>Concentrado: {{viaje.idConcentrado}}</h2>
-      <p>Origen: {{viaje.idOrigen}} - {{viaje.origenNombre}} <br> Destino: {{viaje.destino}}</p>
       <ion-grid>
         <ion-row>
           <ion-col width-50>
@@ -58,3 +58,8 @@
     </ion-item>
   </ion-card>
 </ion-content>
+
+
+<button fab fab-right fab-bottom (click)="obtieneViajesAsignados();" style="z-index:100;">
+<ion-icon name="sync"></ion-icon>
+</button>

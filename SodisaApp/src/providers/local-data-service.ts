@@ -29,7 +29,7 @@ export class LocalDataService {
   }
 
   createTableUsuario() {
-    let sql = 'CREATE TABLE IF NOT EXISTS Usuario(idUsuario INTEGER PRIMARY KEY AUTOINCREMENT, nombreCompleto TEXT, imei TEXT, userName TEXT, password TEXT, estatus INTEGER); ';
+    let sql = 'CREATE TABLE IF NOT EXISTS Usuario(idUsuario INTEGER PRIMARY KEY AUTOINCREMENT, nombreCompleto TEXT, imei TEXT, userName TEXT, password TEXT, estatus INTEGER, tracto TEXT); ';
     return this.db.executeSql(sql, []);
   }
 
@@ -39,7 +39,7 @@ export class LocalDataService {
   }
 
   createTableViajeDetalle() {
-    let sql = 'CREATE TABLE IF NOT EXISTS ViajeDetalle(idViajeDetalle INTEGER PRIMARY KEY AUTOINCREMENT, idViaje INTEGER, idDestino INTEGER, destinoNombre TEXT, idEstatus INTEGER, idDocumento TEXT, fechaDocumento TEXT, geolocalizacion TEXT); ';
+    let sql = 'CREATE TABLE IF NOT EXISTS ViajeDetalle(idViajeDetalle INTEGER PRIMARY KEY AUTOINCREMENT, idViaje INTEGER, idDestino TEXT, destinoNombre TEXT, idEstatus INTEGER, idDocumento TEXT, fechaDocumento TEXT, geolocalizacion TEXT); ';
     return this.db.executeSql(sql, []);
   }
 
@@ -60,16 +60,19 @@ export class LocalDataService {
     return this.db.executeSql(sql, [task.title, task.completed]);
   }
 
-  checkUsuario(usuario) {
-    let sql = 'SELECT * FROM Usuario WHERE userName = ?';
-    return this.db.executeSql(sql, [usuario])
+  checkUsuario(usuario, pwd, imei) {
+    let sql = 'SELECT nombreCompleto AS Nombre, tracto FROM Usuario WHERE userName = ? AND password = ? AND imei = ?';
+    return this.db.executeSql(sql, [usuario, pwd, imei])
       .then(response => {
-        let hayUsuario = [];
-        for (let index = 0; index < response.rows.length; index++) {
-          hayUsuario.push(response.rows.item(index));
+        if (response.rows.length > 0) {
+          return Promise.resolve(response.rows.item(0));
         }
-        return Promise.resolve(hayUsuario);
-      })
+        else {
+          return Promise.resolve('KO');
+        }
+      }).catch(error => {
+        return Promise.resolve('KO');
+      });
   }
 
   checkViajesAsignados() {
@@ -90,28 +93,7 @@ export class LocalDataService {
       this.db.executeSql(evitaDuplicadosQuery, [travels[x].pIdOrigen, travels[x].pIdConcentradoVc]).then(respuesta => {
         let existe = respuesta.rows.item(0).Existe;
         if (existe == 0) {
-
-          //Recupero los distintos destinos
-          let idDestinos: any[] = [];
-          let destinos: string = "";
-
-          for (let y = 0; y < travels[x].pViajeMovilDetalle.length; y++) {
-            if (y == 0) {
-              idDestinos.push(travels[x].pViajeMovilDetalle[y].pIdDestino);
-              destinos += travels[x].pViajeMovilDetalle[y].pDestinoNombre + ", ";
-            }
-            else {
-              let encontrado = destinos.indexOf(travels[x].pViajeMovilDetalle[y].pIdDestino);
-              if (encontrado != -1) {
-                idDestinos.push(travels[x].pViajeMovilDetalle[y].pIdDestino);
-                destinos += travels[x].pViajeMovilDetalle[y].pDestinoNombre + ", ";
-              }
-            }
-          }
-
-          destinos = destinos.substring(0, destinos.length - 2);
-
-          this.sqlQuery = "INSERT INTO Viaje (idOrigen, origenNombre, idConcentrado, tipoViaje, economico, odometro, idEstatus, idUsuario, idRechazo, geolocalizacion, destino) VALUES (" +
+          this.sqlQuery = "INSERT INTO Viaje (idOrigen, origenNombre, idConcentrado, tipoViaje, economico, odometro, idEstatus, idUsuario, idRechazo, geolocalizacion) VALUES (" +
             travels[x].pIdOrigen + ", '" +
             travels[x].pOrigenNombre + "', '" +
             travels[x].pIdConcentradoVc + "', " +
@@ -119,8 +101,7 @@ export class LocalDataService {
             travels[x].pNumeroEconomicoRemolque + "', " +
             travels[x].pOdometro + ", " +
             travels[x].pIdEstatus + ", 1, 0, '" +
-            travels[x].pGeoLocalizacionOrigen + "', '" +
-            destinos + "'); ";
+            travels[x].pGeoLocalizacionOrigen + "');";
 
           this.db.executeSql(this.sqlQuery, []);
 
@@ -140,8 +121,8 @@ export class LocalDataService {
               let fechaDoc = dia + '-' + (date.getMonth() + 1) + '-' + date.getFullYear() + ' ' + date.getHours() + ':' + date.getMinutes();
 
               this.sqlQuery = "INSERT INTO ViajeDetalle(idViaje, idDestino, destinoNombre, idEstatus, idDocumento, fechaDocumento, geolocalizacion) VALUES (" +
-                identity + ", " +
-                travels[x].pViajeMovilDetalle[y].pIdDestino + ", '" +
+                identity + ", '" +
+                travels[x].pViajeMovilDetalle[y].pIdDestino + "', '" +
                 travels[x].pViajeMovilDetalle[y].pDestinoNombre + "', " +
                 travels[x].pViajeMovilDetalle[y].pIdEstatus + ", '" +
                 travels[x].pViajeMovilDetalle[y].pIdDocumentoVc + "', '" +
@@ -150,13 +131,40 @@ export class LocalDataService {
 
               this.db.executeSql(this.sqlQuery, []);
             }
+
+            //Recupero los distintos destinos
+            let idDestinos: any[] = [];
+            let destinos: string = "";
+
+            this.sqlQuery = "SELECT idDestino, destinoNombre FROM ViajeDetalle WHERE idViaje = ? ";
+            this.db.executeSql(this.sqlQuery, [identity]).then(res => {
+              if (res.rows.length > 0) {
+                for (let y = 0; y < res.rows.length; y++) {
+                  if (y == 0) {
+                    idDestinos.push(res.rows.item(y).idDestino);
+                    destinos += res.rows.item(y).idDestino + "-" + res.rows.item(y).destinoNombre + ", ";
+                  }
+                  else {
+                    let encontrado = idDestinos.indexOf(res.rows.item(y).idDestino);
+                    if (encontrado == -1) {
+                      idDestinos.push(res.rows.item(y).idDestino);
+                      destinos += res.rows.item(y).idDestino + "-" + res.rows.item(y).destinoNombre + ", ";
+                    }
+                  }
+                }
+
+                destinos = destinos.substring(0, destinos.length - 2);
+
+                let sqlUpdate = "UPDATE Viaje SET destino = '" + destinos + "' WHERE idViaje = ? ";
+                this.db.executeSql(sqlUpdate, [identity]);
+              }
+            });
+
           });
         }
-        // else {
-        //   alert('Viaje Duplicado');
-        // }
       });
     }
+    return Promise.resolve('OK');
   }
 
   actualizaViajeLocal(idEstatus, idRechazo, idViaje) {
@@ -178,15 +186,25 @@ export class LocalDataService {
     this.db.executeSql(sql, []);
   }
 
-  getUnique = function (destinos) {
-    var u = {}, a = [];
-    for (var i = 0, l = destinos.length; i < l; ++i) {
-      if (u.hasOwnProperty(destinos[i])) {
-        continue;
+  insertaUsuario(userName, password, noTracto, nombreCompleto, imei) {
+    let usuarioQuery = "SELECT COUNT(*) AS Existe FROM Usuario WHERE userName = ? AND password = ? AND imei = ?";
+    this.db.executeSql(usuarioQuery, [userName, password, imei]).then(respuesta => {
+      let existe = respuesta.rows.item(0).Existe;
+      if (existe == 0) {
+        usuarioQuery = "INSERT INTO Usuario (nombreCompleto, imei, userName, password, estatus, tracto) VALUES ('" +
+          nombreCompleto + "', '" +
+          imei + "', '" +
+          userName + "', '" +
+          password + "', 1, '" +
+          noTracto + "'); ";
+
+        this.db.executeSql(usuarioQuery, []);
       }
-      a.push(this[i]);
-      u[this[i]] = 1;
-    }
-    return a;
+    });
+  }
+
+  eliminaViajeLocal(idViaje) {
+    let sql = "DELETE FROM Viaje WHERE idViaje = ?";
+    return this.db.executeSql(sql, [idViaje]);
   }
 }

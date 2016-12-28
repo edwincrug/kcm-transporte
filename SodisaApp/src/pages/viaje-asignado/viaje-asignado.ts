@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, Platform, ToastController, NavParams, AlertController } from 'ionic-angular';
+import { NavController, Platform, ToastController, NavParams, AlertController, LoadingController } from 'ionic-angular';
 import { SodisaService } from '../../servicios/servicios';
 import { Geolocation, GoogleMap, GoogleMapsEvent, GoogleMapsLatLng, GoogleMapsMarkerOptions, GoogleMapsMarker, Toast, Device } from 'ionic-native';
 import { Storage } from '@ionic/storage';
@@ -50,7 +50,8 @@ export class ViajeAsignadoPage {
   lng: any;
 
   constructor(public navCtrl: NavController, private platform: Platform, public sodisaService: SodisaService, public storage: Storage,
-    public toastCtrl: ToastController, private navParams: NavParams, public alertCtrl: AlertController, public dataServices: LocalDataService) {
+    public toastCtrl: ToastController, private navParams: NavParams, public alertCtrl: AlertController, public dataServices: LocalDataService,
+    private loadingCtrl: LoadingController) {
     console.log('Inicia Viajes Asignados');
 
     this.username = navParams.get('usuario');
@@ -69,7 +70,16 @@ export class ViajeAsignadoPage {
   }
 
   ionViewWillEnter() {
-    this.obtieneViajesInternos();
+    let loading = this.loadingCtrl.create({
+      content: 'Obteniendo información...'
+    });
+
+    loading.present();
+
+    setTimeout(() => {
+      this.obtieneViajesInternos();
+      loading.dismiss();
+    }, 3000);
   }
 
   obtieneViajesAsignados() {
@@ -83,10 +93,18 @@ export class ViajeAsignadoPage {
         if (this.viajes.pResponseCode == 1) {
           if (data.pListaViajeMovil.length > 0) {
             this.dataServices.openDatabase()
-              .then(response => {
-                this.dataServices.insertaViajesAsignados(data.pListaViajeMovil);
-                this.obtieneViajesInternos();
-              });
+              .then(() => this.dataServices.insertaViajesAsignados(data.pListaViajeMovil).then(result => {
+                let loading = this.loadingCtrl.create({
+                  content: 'Obteniendo información...'
+                });
+
+                loading.present();
+
+                setTimeout(() => {
+                  this.obtieneViajesInternos();
+                  loading.dismiss();
+                }, 3000);
+              }));
           }
           else {
             let toast = this.toastCtrl.create({
@@ -117,50 +135,28 @@ export class ViajeAsignadoPage {
 
     let exito = "";
 
-    this.dataServices.openDatabase()
-      .then(() => this.dataServices.actualizaViajeLocal(3, 0, idViaje).then(response => {
-        exito = "1";
-      }));
-
     // this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, 'C55163', 0, 3, 'aa1add0d87db4099').subscribe(data => {
     this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.username, 0, 3, this.imei).subscribe(data => {
       this.llamada = data;
       if (this.llamada.pResponseCode == 1) {
-        // this.listaViajesAsignados.splice(indice, 1);
-        let toast = this.toastCtrl.create({
-          message: 'Viaje Aceptado',
-          duration: 2000,
-          position: 'middle'
-        });
-        toast.present();
-        this.obtieneViajesInternos();
-        // this.navCtrl.push(Page1, {
-        //   origen: idOrigen,
-        //   concentrado: idConcentrado,
-        //   operador: this.username,
-        //   tracto: this.pNumeroEconomicoTractocamion
-        // });
+        this.dataServices.openDatabase()
+          .then(() => this.dataServices.actualizaViajeLocal(3, 0, idViaje).then(response => {
+            let toast = this.toastCtrl.create({
+              message: 'Viaje Aceptado',
+              duration: 2000,
+              position: 'middle'
+            });
+            toast.present();
+
+            this.obtieneViajesInternos();
+          }));
+
+        if (exito == "1") {
+
+        }
       }
       else {
-        if (exito == "1") {
-          let toast = this.toastCtrl.create({
-            message: 'Viaje Aceptado',
-            duration: 2000,
-            position: 'middle'
-          });
-          toast.present();
-
-          this.obtieneViajesInternos();
-          // this.navCtrl.push(Page1, {
-          //   origen: idOrigen,
-          //   concentrado: idConcentrado,
-          //   operador: this.username,
-          //   tracto: this.pNumeroEconomicoTractocamion
-          // });
-
-        } else {
-          this.interpretaRespuesta(this.llamada);
-        }
+        this.interpretaRespuesta(this.llamada);
       }
     });
   }
@@ -198,7 +194,7 @@ export class ViajeAsignadoPage {
     if (codigoRespuesta.pResponseCode == 1) {
       this.navCtrl.push(ViajeAsignadoPage);
     }
-    else if (codigoRespuesta.pResponseCode == 5) {
+    else if (codigoRespuesta.pResponseCode == -5) {
       this.navCtrl.push(LoginPage);
     }
   }
@@ -245,44 +241,32 @@ export class ViajeAsignadoPage {
 
     alert.present();
 
-
   }
 
   RechazaViaje(idViaje, idOrigen, idConcentrado, indice) {
     let exitoRechazoViaje = "";
 
-    this.dataServices.openDatabase()
-      .then(() => this.dataServices.actualizaViajeLocal(4, this.idRechazoSelected, idViaje).then(response => {
-        exitoRechazoViaje = "1";
-      }));
-
     this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.username, this.idRechazoSelected, 4, Device.device.uuid).subscribe(data => {
       // this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, 'C55163', this.idRechazoSelected, 4, 'aa1add0d87db4099').subscribe(data => {
       if (data.pResponseCode == 1) {
-        let toast = this.toastCtrl.create({
-          message: 'Viaje Rechazado',
-          duration: 2000,
-          position: 'middle'
-        });
-        toast.present();
+        this.dataServices.openDatabase()
+          .then(() => this.dataServices.eliminaViajeLocal(idViaje).then(response => {
+            let toast = this.toastCtrl.create({
+              message: 'Viaje Rechazado',
+              duration: 2000,
+              position: 'middle'
+            });
+            toast.present();
 
-        this.obtieneViajesInternos();
-        // this.listaViajesAsignados.splice(indice, 1);
+            this.obtieneViajesInternos();
+          }));  //.then(() => this.dataServices.actualizaViajeLocal(4, this.idRechazoSelected, idViaje).then(response => {
+
+        if (exitoRechazoViaje == "1") {
+
+        }
       }
       else {
-        if (exitoRechazoViaje == "1") {
-          let toast = this.toastCtrl.create({
-            message: 'Viaje Rechazado',
-            duration: 2000,
-            position: 'middle'
-          });
-          toast.present();
-
-          this.obtieneViajesInternos();
-        }
-        else {
-          this.interpretaRespuesta(data);
-        }
+        this.interpretaRespuesta(data);
       }
 
     });
@@ -299,13 +283,6 @@ export class ViajeAsignadoPage {
 
         if (response.length > 0) {
           this.listaViajesLocales = response;
-
-          // let toast = this.toastCtrl.create({
-          //   message: JSON.stringify(this.listaViajesLocales),
-          //   duration: 5000,
-          //   position: 'middle'
-          // });
-          // toast.present();
         }
         else {
           this.listaViajesLocales = [];
@@ -326,36 +303,26 @@ export class ViajeAsignadoPage {
 
     let exitoIniciaViaje = "";
 
-    this.dataServices.openDatabase()
-      .then(() => this.dataServices.actualizaViajeLocal(5, 0, idViaje).then(response => {
-        exitoIniciaViaje = "1";
-      }));
-
     this.sodisaService.actualizaViaje(idOrigen, idConcentrado, this.username, 0, 5, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
       // this.sodisaService.actualizaViaje(idOrigen, idConcentrado, 'C55163', 0, 5, 'aa1add0d87db4099', fechaEnviada, coordenadas).subscribe(data => {
       if (data.pResponseCode == 1) {
-        let alert = this.alertCtrl.create({
-          subTitle: 'Viaje Iniciado!',
-          buttons: ['OK']
-        });
-        alert.present();
+        this.dataServices.openDatabase()
+          .then(() => this.dataServices.actualizaViajeLocal(5, 0, idViaje).then(response => {
+            let alert = this.alertCtrl.create({
+              subTitle: 'Viaje Iniciado!',
+              buttons: ['OK']
+            });
+            alert.present();
 
-        this.obtieneViajesInternos();
+            this.obtieneViajesInternos();
+          }));
+
+        if (exitoIniciaViaje == "1") {
+
+        }
       }
       else {
-        if (exitoIniciaViaje == "1") {
-          let toast = this.toastCtrl.create({
-            message: 'Viaje Aceptado',
-            duration: 2000,
-            position: 'middle'
-          });
-          toast.present();
-
-          this.obtieneViajesInternos();
-        }
-        else {
-          this.interpretaRespuesta(data);
-        }
+        this.interpretaRespuesta(data);
       }
 
     });
@@ -374,21 +341,23 @@ export class ViajeAsignadoPage {
 
     let exitoTerminaViaje = "";
 
-    this.dataServices.openDatabase()
-      .then(() => this.dataServices.actualizaViajeLocal(6, 0, idViaje).then(response => {
-        exitoTerminaViaje = "1";
-      }));
-
     this.sodisaService.actualizaViaje(idOrigen, idConcentrado, this.username, 0, 6, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
       // this.sodisaService.actualizaViaje(idOrigen, idConcentrado, 'C55163', 0, 6, 'aa1add0d87db4099', fechaEnviada, coordenadas).subscribe(data => {
       if (data.pResponseCode == 1) {
-        let alert = this.alertCtrl.create({
-          subTitle: 'Viaje Terminado!',
-          buttons: ['OK']
-        });
-        alert.present();
-        this.obtieneViajesInternos();
-        // this.navCtrl.push(ViajeAsignadoPage);
+        this.dataServices.openDatabase()
+          .then(() => this.dataServices.eliminaViajeLocal(idViaje).then(response => {
+            let alert = this.alertCtrl.create({
+              subTitle: 'Viaje Terminado!',
+              buttons: ['OK']
+            });
+            alert.present();
+
+            this.obtieneViajesInternos();
+          }));
+
+        if (exitoTerminaViaje == "1") {
+
+        }
       }
       else {
         if (exitoTerminaViaje == "1") {
@@ -400,6 +369,8 @@ export class ViajeAsignadoPage {
           toast.present();
 
           this.obtieneViajesInternos();
+
+          this.interpretaRespuesta(data);
         }
         else {
           this.interpretaRespuesta(data);

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, ToastController } from 'ionic-angular';
+import { NavController, ToastController, AlertController } from 'ionic-angular';
 import { Device } from 'ionic-native';
 import { Storage } from '@ionic/storage';
 
@@ -8,6 +8,7 @@ import { Page1 } from '../../pages/page1/page1';
 import { Page2 } from '../../pages/page2/page2';
 import { ViajeAsignadoPage } from '../../pages/viaje-asignado/viaje-asignado';
 import { LocalDataService } from '../../providers/local-data-service';
+import { Red } from '../../providers/red';
 
 /*
   Generated class for the Login page.
@@ -18,7 +19,7 @@ import { LocalDataService } from '../../providers/local-data-service';
 @Component({
     selector: 'page-login',
     templateUrl: 'login.html',
-    providers: [SodisaService, LocalDataService]
+    providers: [SodisaService, LocalDataService, Red]
 })
 export class LoginPage {
     username: string;
@@ -30,7 +31,7 @@ export class LoginPage {
     usuarioExiste: any[] = [];
 
     constructor(public navCtrl: NavController, public sodisaService: SodisaService, public toastCtrl: ToastController,
-        public storage: Storage, public dataServices: LocalDataService) { }
+        public storage: Storage, public dataServices: LocalDataService, public alertCtrl: AlertController, public networkService: Red) { }
 
     ionViewDidLoad() {
         console.log('Hello LoginPage Page');
@@ -38,11 +39,38 @@ export class LoginPage {
 
     validaCredenciales() {
         this.imei = Device.device.uuid;
-        // this.sodisaService.login('C55163', 'C55163', 'aa1add0d87db4099').subscribe(data => {
-        this.sodisaService.login(this.username, this.password, this.imei).subscribe(data => {
-            this.credenciales = data;
-            this.interpretaRespuesta(this.credenciales);
-        });
+
+        if (this.networkService.noConnection()) {
+            this.dataServices.openDatabase()
+                .then(() => this.dataServices.checkUsuario(this.username, this.password, this.imei).then(respuesta => {
+                    if (respuesta == 'KO') {
+                        alert('Credenciales incorrectas');
+                    }
+                    else {
+                        let toast = this.toastCtrl.create({
+                            message: '¡Bienvenido ' + respuesta.Nombre + ' !',
+                            duration: 2000,
+                            position: 'middle'
+                        });
+                        toast.present();
+
+                        this.navCtrl.push(ViajeAsignadoPage, {
+                            usuario: this.username,
+                            nombre: respuesta.Nombre,
+                            eco: respuesta.tracto
+                        });
+                    }
+                }).catch(error => {
+
+                }));
+        }
+        else {
+            // this.sodisaService.login('C55163', 'C55163', 'aa1add0d87db4099').subscribe(data => {
+            this.sodisaService.login(this.username, this.password, this.imei).subscribe(data => {
+                this.credenciales = data;
+                this.interpretaRespuesta(this.credenciales);
+            });
+        }
     }
 
     interpretaRespuesta(codigoRespuesta) {
@@ -74,22 +102,9 @@ export class LoginPage {
         toast.present();
 
         if (codigoRespuesta.pResponseCode == 1) {
+            this.registraUsuario(codigoRespuesta.pIdOperador, this.password, codigoRespuesta.pNumeroEconomicoTractocamion, codigoRespuesta.pOperadorNombre, this.imei);
 
-            // this.dataServices.openDatabase()
-            //     .then(() => this.dataServices.checkViajesAsignados().then(response => {
-            //         // .then(() => this.dataServices.checkUsuario(codigoRespuesta.pIdOperador).then(response => {
-            //         //if(response.length == 0) --Registra en BD
-
-            //         this.navCtrl.push(ViajeAsignadoPage, {
-            //             usuario: codigoRespuesta.pIdOperador,
-            //             nombre: codigoRespuesta.pOperadorNombre
-            //         });
-
-
-            //     }).catch(error => {
-            //         alert('Error: ' + error.ToString());
-            //     }));
-
+            this.registraViajesAsignados(codigoRespuesta.pListaViajeMovil);
 
             this.navCtrl.push(ViajeAsignadoPage, {
                 usuario: codigoRespuesta.pIdOperador,
@@ -98,5 +113,21 @@ export class LoginPage {
             });
 
         }
+    }
+
+    registraViajesAsignados(ListaViajes) {
+        if (ListaViajes.length > 0) {
+            this.dataServices.openDatabase()
+                .then(response => {
+                    this.dataServices.insertaViajesAsignados(ListaViajes);
+                });
+        }
+    }
+
+    registraUsuario(userName, password, noTracto, nombreCompleto, imei) {
+        this.dataServices.openDatabase()
+            .then(response => {
+                this.dataServices.insertaUsuario(userName, password, noTracto, nombreCompleto, imei);
+            });
     }
 }

@@ -8,6 +8,7 @@ import { LoginPage } from '../pages/login/login';
 import { ViajeAsignadoPage } from '../pages/viaje-asignado/viaje-asignado';
 import { PerfilPage } from '../pages/perfil/perfil';
 import { LocalDataService } from '../providers/local-data-service';
+import { SodisaService } from '../servicios/servicios';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,7 @@ import { LocalDataService } from '../providers/local-data-service';
     ViajeAsignadoPage,
     PerfilPage
   ],
-  imports: [ 
+  imports: [
     IonicModule.forRoot(MyApp)
   ],
   bootstrap: [IonicApp],
@@ -26,10 +27,10 @@ import { LocalDataService } from '../providers/local-data-service';
     MyApp,
     Page1,
     Page2,
-    LoginPage, 
+    LoginPage,
     ViajeAsignadoPage,
     PerfilPage
   ],
-  providers: [{provide: ErrorHandler, useClass: IonicErrorHandler}, Storage, LocalDataService]
+  providers: [{ provide: ErrorHandler, useClass: IonicErrorHandler }, Storage, LocalDataService, SodisaService]
 })
-export class AppModule {}
+export class AppModule { }

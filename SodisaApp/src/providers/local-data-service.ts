@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
 import { SQLite } from 'ionic-native';
+import { SodisaService } from '../servicios/servicios';
+import { Component } from '@angular/core';
+import { Http, Headers, RequestOptions, Response } from '@angular/http';
+
+import 'rxjs';
 import 'rxjs/add/operator/map';
+import { Observable } from 'rxjs/Observable';
 
 /*
   Generated class for the LocalDataService provider.
@@ -15,8 +20,9 @@ export class LocalDataService {
   hayUsuario: any[] = [];
   hayViajes: any[] = [];
   sqlQuery: string;
+  private url: string = 'http://dev1.sodisamovil.kcm.com.mx/_WebAPI/Operador/';
 
-  constructor(public http: Http) {
+  constructor() {
     console.log('Hello LocalDataService Provider');
     this.db = new SQLite();
   }
@@ -40,6 +46,11 @@ export class LocalDataService {
 
   createTableViajeDetalle() {
     let sql = 'CREATE TABLE IF NOT EXISTS ViajeDetalle(idViajeDetalle INTEGER PRIMARY KEY AUTOINCREMENT, idViaje INTEGER, idDestino TEXT, destinoNombre TEXT, idEstatus INTEGER, idDocumento TEXT, fechaDocumento TEXT, geolocalizacion TEXT); ';
+    return this.db.executeSql(sql, []);
+  }
+
+  createTableViajeSync() {
+    let sql = 'CREATE TABLE IF NOT EXISTS ViajeSync(idViajeSync INTEGER PRIMARY KEY AUTOINCREMENT, idViaje INTEGER, idOrigen INTEGER, idConcentrado TEXT, idOperador TEXT,  idMotivoRechazo INTEGER,  odometro INTEGER, idEstatus INTEGER, idDispositivo TEXT, geolocalizacion TEXT, idDocumento TEXT, fecha TEXT); ';
     return this.db.executeSql(sql, []);
   }
 
@@ -172,20 +183,6 @@ export class LocalDataService {
     return this.db.executeSql(sql, [idViaje]);
   }
 
-  insertViajeAsignadoDummy() {
-    let sql = "INSERT INTO Viaje (idOrigen, origenNombre, idConcentrado, tipoViaje, economico, odometro, idEstatus) VALUES (1, 'Aguscalientes's, 'CON1', 1, 'ECO-1', 20, 2); ";
-    this.db.executeSql(sql, []);
-
-    sql = "INSERT INTO Viaje (idOrigen, origenNombre, idConcentrado, tipoViaje, economico, odometro, idEstatus) VALUES (2, 'Baja California Norte', 'CON2', 2, 'ECO-2', 20, 3); ";
-    this.db.executeSql(sql, []);
-
-    sql = "INSERT INTO Viaje (idOrigen, origenNombre, idConcentrado, tipoViaje, economico, odometro, idEstatus) VALUES (3, 'Colima', 'CON3', 1, 'ECO-3', 20, 5); ";
-    this.db.executeSql(sql, []);
-
-    sql = "INSERT INTO Viaje (idOrigen, origenNombre, idConcentrado, tipoViaje, economico, odometro, idEstatus) VALUES (4, 'Durango', 'CON4', 2, 'ECO-4', 20, 4); ";
-    this.db.executeSql(sql, []);
-  }
-
   insertaUsuario(userName, password, noTracto, nombreCompleto, imei) {
     let usuarioQuery = "SELECT COUNT(*) AS Existe FROM Usuario WHERE userName = ? AND password = ? AND imei = ?";
     this.db.executeSql(usuarioQuery, [userName, password, imei]).then(respuesta => {
@@ -207,4 +204,34 @@ export class LocalDataService {
     let sql = "DELETE FROM Viaje WHERE idViaje = ?";
     return this.db.executeSql(sql, [idViaje]);
   }
+
+  eliminaViajeSync(idViajeSync) {
+    let sql = "DELETE FROM ViajeSync WHERE idViajeSync = ?";
+    return this.db.executeSql(sql, [idViajeSync]);
+  }
+
+  viajesPorSincronizar() {
+    let viajeSyncQuery = "SELECT * FROM ViajeSync";
+    return this.db.executeSql(viajeSyncQuery, []).then(response => {
+      let hayViajes = [];
+      for (let index = 0; index < response.rows.length; index++) {
+        hayViajes.push(response.rows.item(index));
+      }
+      return Promise.resolve(hayViajes);
+    });
+  }
+
+  insertaViajeSync(idViaje, idOrigen, idConcentrado, idOperador, idMotivoRechazo, idEstatus, idDispositivo) {
+    let viajeQuery = "INSERT INTO ViajeSync (idViaje, idOrigen, idConcentrado, idOperador, idMotivoRechazo, idEstatus, idDispositivo) VALUES (" +
+      idViaje + ", " +
+      idOrigen + ", '" +
+      idConcentrado + "', '" +
+      idOperador + "', " +
+      idMotivoRechazo + ", " +
+      idEstatus + ", '" +
+      idDispositivo + "'); ";
+
+    return this.db.executeSql(viajeQuery, []);
+  }
+
 }

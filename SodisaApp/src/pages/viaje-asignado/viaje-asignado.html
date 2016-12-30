@@ -17,6 +17,10 @@
 </ion-header>
 
 <ion-content>
+  <ion-refresher (ionRefresh)="obtieneViajesAsignados($event)">
+    <ion-refresher-content pullingIcon="arrow-dropdown" pullingText="Suelte para actualizar" refreshingSpinner="circles" refreshingText="Actualizando ...">
+    </ion-refresher-content>
+  </ion-refresher>
   <!--<ion-card *ngFor="let viaje of pListaViajeMovil; let i = index">-->
   <ion-card *ngFor="let viaje of listaViajesLocales; let i = index">
     <ion-card-header>
@@ -58,8 +62,3 @@
     </ion-item>
   </ion-card>
 </ion-content>
-
-
-<button fab fab-right fab-bottom (click)="obtieneViajesAsignados();" style="z-index:100;">
-<ion-icon name="sync"></ion-icon>
-</button>

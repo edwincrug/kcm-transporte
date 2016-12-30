@@ -221,7 +221,7 @@ export class LocalDataService {
     });
   }
 
-  insertaViajeSync(idViaje, idOrigen, idConcentrado, idOperador, idMotivoRechazo, idEstatus, idDispositivo) {
+  insertaAceptaRechazaViajeSync(idViaje, idOrigen, idConcentrado, idOperador, idMotivoRechazo, idEstatus, idDispositivo) {
     let viajeQuery = "INSERT INTO ViajeSync (idViaje, idOrigen, idConcentrado, idOperador, idMotivoRechazo, idEstatus, idDispositivo) VALUES (" +
       idViaje + ", " +
       idOrigen + ", '" +
@@ -230,6 +230,21 @@ export class LocalDataService {
       idMotivoRechazo + ", " +
       idEstatus + ", '" +
       idDispositivo + "'); ";
+
+    return this.db.executeSql(viajeQuery, []);
+  }
+
+  insertaIniciaTerminaViajeSync(idViaje, idOrigen, idConcentrado, idOperador, idMotivoRechazo, idEstatus, idDispositivo, coordenadas, fecha) {
+    let viajeQuery = "INSERT INTO ViajeSync (idViaje, idOrigen, idConcentrado, idOperador, idMotivoRechazo, idEstatus, idDispositivo, geolocalizacion, fecha) VALUES (" +
+      idViaje + ", " +
+      idOrigen + ", '" +
+      idConcentrado + "', '" +
+      idOperador + "', " +
+      idMotivoRechazo + ", " +
+      idEstatus + ", '" +
+      idDispositivo + "', '" +
+      coordenadas + "', '" +
+      fecha + "'); ";
 
     return this.db.executeSql(viajeQuery, []);
   }

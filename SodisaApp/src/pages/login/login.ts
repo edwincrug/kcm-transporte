@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, ToastController, AlertController } from 'ionic-angular';
+import { NavController, ToastController, AlertController, LoadingController } from 'ionic-angular';
 import { Device } from 'ionic-native';
 import { Storage } from '@ionic/storage';
 
@@ -31,7 +31,8 @@ export class LoginPage {
     usuarioExiste: any[] = [];
 
     constructor(public navCtrl: NavController, public sodisaService: SodisaService, public toastCtrl: ToastController,
-        public storage: Storage, public dataServices: LocalDataService, public alertCtrl: AlertController, public networkService: Red) { }
+        public storage: Storage, public dataServices: LocalDataService, public alertCtrl: AlertController, public networkService: Red,
+        private loadingCtrl: LoadingController) { }
 
     ionViewDidLoad() {
         console.log('Hello LoginPage Page');
@@ -41,15 +42,23 @@ export class LoginPage {
         this.imei = Device.device.uuid;
 
         if (this.networkService.noConnection()) {
+            let loading = this.loadingCtrl.create({
+                content: 'Autenticando...'
+            });
+
+            loading.present();
+
             this.dataServices.openDatabase()
                 .then(() => this.dataServices.checkUsuario(this.username, this.password, this.imei).then(respuesta => {
+                    loading.dismiss();
+
                     if (respuesta == 'KO') {
                         alert('Credenciales incorrectas');
                     }
                     else {
                         let toast = this.toastCtrl.create({
                             message: '¡Bienvenido ' + respuesta.Nombre + ' !',
-                            duration: 2000,
+                            duration: 1000,
                             position: 'middle'
                         });
                         toast.present();
@@ -61,12 +70,20 @@ export class LoginPage {
                         });
                     }
                 }).catch(error => {
-
+                    loading.dismiss();
                 }));
+
         }
         else {
+            let loading = this.loadingCtrl.create({
+                content: 'Autenticando...'
+            });
+
+            loading.present();
+
             // this.sodisaService.login('C55163', 'C55163', 'aa1add0d87db4099').subscribe(data => {
             this.sodisaService.login(this.username, this.password, this.imei).subscribe(data => {
+                loading.dismiss();
                 this.credenciales = data;
                 this.interpretaRespuesta(this.credenciales);
             });
@@ -96,7 +113,7 @@ export class LoginPage {
 
         let toast = this.toastCtrl.create({
             message: this.mensaje,
-            duration: 2000,
+            duration: 1000,
             position: 'middle'
         });
         toast.present();

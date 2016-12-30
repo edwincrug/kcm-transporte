@@ -60,31 +60,58 @@ export class MyApp {
         dbService.openDatabase()
           .then(() => {
             dbService.viajesPorSincronizar().then(result => {
-              alert('Viajes por sincronizar: ' + result.length);
+              // alert('Viajes por sincronizar: ' + result.length);
 
               if (result.length > 0) {
                 for (let x = 0; x < result.length; x++) {
-                  alert('idOrigen: ' + result[x].idOrigen);
-                  alert('concentrado: ' + result[x].idConcentrado);
-                  alert('operador: ' + result[x].idOperador);
-                  alert('motivo: ' + result[x].idMotivoRechazo);
-                  alert('estatus: ' + result[x].idEstatus);
-                  alert('dispositivo: ' + result[x].idDispositivo);
-                  alert('idViaje: ' + result[x].idViaje);
+                  // alert('idOrigen: ' + result[x].idOrigen);
+                  // alert('concentrado: ' + result[x].idConcentrado);
+                  // alert('operador: ' + result[x].idOperador);
+                  // alert('motivo: ' + result[x].idMotivoRechazo);
+                  // alert('estatus: ' + result[x].idEstatus);
+                  // alert('dispositivo: ' + result[x].idDispositivo);
+                  // alert('idViaje: ' + result[x].idViaje);
+                  // alert('fecha: ' + result[x].fecha);
+                  // alert('geolocalizacion: ' + result[x].geolocalizacion);
 
-                  wsSodisa.aceptaRechazaViaje(result[x].idOrigen, result[x].idConcentrado, result[x].idOperador, result[x].idMotivoRechazo, result[x].idEstatus, result[x].idDispositivo).subscribe(resp => {
-                    if (resp.pResponseCode == 1) {
-                      alert('Server actualizado');
-                      dbService.eliminaViajeSync(result[x].idViaje).then(() => {
-                        alert('Eliminado local y sincronizado :)');
-                      }).catch(() => {
-                        alert('Local no eliminado');
-                      });
-                    }
-                    else {
-                      alert('No lo afecto pero hay comunicactión');
-                    }
-                  });
+                  if (result[x].idEstatus == 3 || result[x].idEstatus == 4) {
+                    wsSodisa.aceptaRechazaViaje(result[x].idOrigen, result[x].idConcentrado, result[x].idOperador, result[x].idMotivoRechazo, result[x].idEstatus, result[x].idDispositivo).subscribe(resp => {
+                      if (resp.pResponseCode == 1) {
+                        // alert('Server actualizado');
+                        dbService.eliminaViajeSync(result[x].idViajeSync).then(() => {
+                          if (result[x].idEstatus == 4) {
+                            dbService.eliminaViajeLocal(result[x].idViaje).then(() => {
+                              // alert('Eliminado Local');
+                            });
+                          }
+                        }).catch(() => {
+                          // alert('Local no eliminado');
+                        });
+                      }
+                      else {
+                        
+                      }
+                    });
+                  }
+                  else if (result[x].idEstatus == 5 || result[x].idEstatus == 6) {
+                    wsSodisa.actualizaViaje(result[x].idOrigen, result[x].idConcentrado, result[x].idOperador, 0, result[x].idEstatus, result[x].idDispositivo, result[x].fecha, result[x].geolocalizacion).subscribe(resp => {
+                      if (resp.pResponseCode == 1) {
+                        // alert('Server actualizado');
+                        dbService.eliminaViajeSync(result[x].idViajeSync).then(() => {
+                          if (result[x].idEstatus == 6) {
+                            dbService.eliminaViajeLocal(result[x].idViaje).then(() => {
+                              // alert('Eliminado Local');
+                            });
+                          }
+                        }).catch(() => {
+                          // alert('Local no eliminado');
+                        });
+                      }
+                      else {
+                        // alert('No lo afecto pero hay comunicactión');
+                      }
+                    });
+                  }
                 }
               }
 

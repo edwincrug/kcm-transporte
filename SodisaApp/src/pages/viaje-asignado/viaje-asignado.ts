@@ -136,10 +136,14 @@ export class ViajeAsignadoPage {
   AceptaViaje(idViaje, idOrigen, idConcentrado, indice) {
     this.imei = Device.device.uuid;
 
-    let exito = "";
+    // let loading = this.loadingCtrl.create({
+    //   content: 'Espere por favor ...'
+    // });    
 
     if (this.networkService.noConnection()) {
+      // loading.present();
       this.dataServices.insertaAceptaRechazaViajeSync(idViaje, idOrigen, idConcentrado, this.username, 0, 3, this.imei).then(() => {
+        // loading.dismiss();
         this.dataServices.actualizaViajeLocal(3, 0, idViaje).then(response => {
           let alert = this.alertCtrl.create({
             subTitle: 'Viaje Aceptado',
@@ -149,11 +153,14 @@ export class ViajeAsignadoPage {
 
           this.obtieneViajesInternos();
         });
+      }).catch(error => {
+        // loading.dismiss();
       });
     }
     else {
       // this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, 'C55163', 0, 3, 'aa1add0d87db4099').subscribe(data => {
       this.sodisaService.aceptaRechazaViaje(idOrigen, idConcentrado, this.username, 0, 3, this.imei).subscribe(data => {
+        // loading.dismiss();
         this.llamada = data;
         if (this.llamada.pResponseCode == 1) {
           this.dataServices.openDatabase()
@@ -169,6 +176,12 @@ export class ViajeAsignadoPage {
         }
         else {
           this.interpretaRespuesta(this.llamada);
+
+          if (this.llamada.pResponseCode == -8) {
+            this.EliminaViajeDesasociado(idViaje, 0);
+          }
+
+          this.obtieneViajesInternos();
         }
       });
     }
@@ -194,6 +207,9 @@ export class ViajeAsignadoPage {
         break;
       case -5:
         this.mensaje = "La sesión expiro";
+        break;
+      case -8:
+        this.mensaje = "Este viaje fue desasignado";
         break;
     }
 
@@ -257,7 +273,13 @@ export class ViajeAsignadoPage {
   }
 
   RechazaViaje(idViaje, idOrigen, idConcentrado, indice) {
-    let exitoRechazoViaje = "";
+
+    //  let loading = this.loadingCtrl.create({
+    //     content: 'Espere por favor ...'
+    //   });
+
+    //   loading.present();
+
     if (this.networkService.noConnection()) {
       this.dataServices.insertaAceptaRechazaViajeSync(idViaje, idOrigen, idConcentrado, this.username, this.idRechazoSelected, 4, Device.device.uuid).then(() => {
         this.dataServices.actualizaViajeLocal(4, this.idRechazoSelected, idViaje).then(response => {
@@ -288,6 +310,11 @@ export class ViajeAsignadoPage {
         }
         else {
           this.interpretaRespuesta(data);
+
+          if (this.llamada.pResponseCode == -8) {
+            this.EliminaViajeDesasociado(idViaje, 0);
+          }
+          this.obtieneViajesInternos();
         }
 
       });
@@ -349,6 +376,12 @@ export class ViajeAsignadoPage {
         }
         else {
           this.interpretaRespuesta(data);
+
+          if (data.pResponseCode == -8) {
+            this.EliminaViajeDesasociado(idViaje, 0);
+          }
+
+          this.obtieneViajesInternos();
         }
 
       });
@@ -398,6 +431,12 @@ export class ViajeAsignadoPage {
         }
         else {
           this.interpretaRespuesta(data);
+
+          if (this.llamada.pResponseCode == -8) {
+            this.EliminaViajeDesasociado(idViaje, 0);
+          }
+
+          this.obtieneViajesInternos();
         }
       });
     }
@@ -437,6 +476,9 @@ export class ViajeAsignadoPage {
                   }
                   else {
                     this.interpretaRespuesta(resp);
+                    if (resp.pResponseCode == -8) {
+                      this.EliminaViajeDesasociado(result[x].idViaje, result[x].idViajeSync);
+                    }
                   }
                 });
               }
@@ -456,6 +498,9 @@ export class ViajeAsignadoPage {
                   }
                   else {
                     this.interpretaRespuesta(resp);
+                    if (resp.pResponseCode == -8) {
+                      this.EliminaViajeDesasociado(result[x].idViaje, result[x].idViajeSync);
+                    }
                   }
                 });
               }
@@ -466,6 +511,19 @@ export class ViajeAsignadoPage {
       });
   }
 
+  EliminaViajeDesasociado(idViaje, idViajeSync) {
+    this.dataServices.openDatabase()
+      .then(() => {
+
+        this.dataServices.eliminaViajeLocal(idViaje).then(() => {
+          // alert('Eliminado Local');
+        });
+
+        this.dataServices.eliminaViajeSync(idViajeSync).then(() => {
+          //alert('Eliminado sync');
+        });
+      });
+  }
 }
 
 

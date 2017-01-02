@@ -20,7 +20,6 @@ export class LocalDataService {
   hayUsuario: any[] = [];
   hayViajes: any[] = [];
   sqlQuery: string;
-  private url: string = 'http://dev1.sodisamovil.kcm.com.mx/_WebAPI/Operador/';
 
   constructor() {
     console.log('Hello LocalDataService Provider');

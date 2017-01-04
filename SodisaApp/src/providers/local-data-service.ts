@@ -246,6 +246,6 @@ export class LocalDataService {
       fecha + "'); ";
 
     return this.db.executeSql(viajeQuery, []);
-  }
+  }  
 
 }

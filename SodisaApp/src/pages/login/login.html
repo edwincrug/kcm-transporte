@@ -6,15 +6,15 @@
 -->
 
 <!--<ion-header>
-  <ion-navbar>
-    <ion-title>login</ion-title>
+  <ion-navbar color="primary">
+    <ion-title>Login</ion-title>
   </ion-navbar>
 </ion-header>-->
 
-<ion-content>
+<ion-content padding>
   <ion-row>
     <ion-col>
-      <img src="assets/images/sodisa.ico" class="center"/>
+      <img src="assets/images/sodisa.ico" class="center" />
     </ion-col>
   </ion-row>
   <ion-list>
@@ -27,8 +27,8 @@
       <ion-input [(ngModel)]="password" type="password" value="" aria-placeholder="Contraseña"></ion-input>
     </ion-item>
   </ion-list>
-<br>
+  <br>
   <div>
-    <button ion-button block (click)="validaCredenciales()">Ingresar</button>
+    <button ion-button block round color="danger" (click)="validaCredenciales()">Ingresar</button>
   </div>
 </ion-content>

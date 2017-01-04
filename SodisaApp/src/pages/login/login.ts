@@ -9,6 +9,7 @@ import { Page2 } from '../../pages/page2/page2';
 import { ViajeAsignadoPage } from '../../pages/viaje-asignado/viaje-asignado';
 import { LocalDataService } from '../../providers/local-data-service';
 import { Red } from '../../providers/red';
+import { HomePage } from '../../pages/home/home';
 
 /*
   Generated class for the Login page.
@@ -41,11 +42,12 @@ export class LoginPage {
     validaCredenciales() {
         this.imei = Device.device.uuid;
 
-        if (this.networkService.noConnection()) {
-            let loading = this.loadingCtrl.create({
-                content: 'Autenticando...'
-            });
+        let loading = this.loadingCtrl.create({
+            content: 'Autenticando...',
+            duration: 10000
+        });
 
+        if (this.networkService.noConnection()) {
             loading.present();
 
             this.dataServices.openDatabase()
@@ -63,7 +65,7 @@ export class LoginPage {
                         });
                         toast.present();
 
-                        this.navCtrl.push(ViajeAsignadoPage, {
+                        this.navCtrl.push(HomePage, {
                             usuario: this.username,
                             nombre: respuesta.Nombre,
                             eco: respuesta.tracto
@@ -75,10 +77,6 @@ export class LoginPage {
 
         }
         else {
-            let loading = this.loadingCtrl.create({
-                content: 'Autenticando...'
-            });
-
             loading.present();
 
             // this.sodisaService.login('C55163', 'C55163', 'aa1add0d87db4099').subscribe(data => {
@@ -147,4 +145,5 @@ export class LoginPage {
                 this.dataServices.insertaUsuario(userName, password, noTracto, nombreCompleto, imei);
             });
     }
+
 }

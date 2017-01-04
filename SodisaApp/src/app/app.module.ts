@@ -3,10 +3,11 @@ import { IonicApp, IonicModule, IonicErrorHandler } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { MyApp } from './app.component';
 import { Page1 } from '../pages/page1/page1';
-import { Page2 } from '../pages/page2/page2';
 import { LoginPage } from '../pages/login/login';
 import { ViajeAsignadoPage } from '../pages/viaje-asignado/viaje-asignado';
-import { PerfilPage } from '../pages/perfil/perfil';
+import { HomePage } from '../pages/home/home';
+import { ViajePage } from '../pages/viaje/viaje';
+
 import { LocalDataService } from '../providers/local-data-service';
 import { SodisaService } from '../servicios/servicios';
 
@@ -14,10 +15,10 @@ import { SodisaService } from '../servicios/servicios';
   declarations: [
     MyApp,
     Page1,
-    Page2,
     LoginPage,
     ViajeAsignadoPage,
-    PerfilPage
+    HomePage,
+    ViajePage
   ],
   imports: [
     IonicModule.forRoot(MyApp)
@@ -26,10 +27,10 @@ import { SodisaService } from '../servicios/servicios';
   entryComponents: [
     MyApp,
     Page1,
-    Page2,
     LoginPage,
     ViajeAsignadoPage,
-    PerfilPage
+    HomePage,
+    ViajePage
   ],
   providers: [{ provide: ErrorHandler, useClass: IonicErrorHandler }, Storage, LocalDataService, SodisaService]
 })

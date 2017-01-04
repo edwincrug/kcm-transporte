@@ -6,6 +6,8 @@ import { Storage } from '@ionic/storage';
 
 import { LoginPage } from '../../pages/login/login';
 import { Page1 } from '../../pages/page1/page1';
+import { ViajePage } from '../../pages/viaje/viaje';
+
 import { LocalDataService } from '../../providers/local-data-service';
 import { Red } from '../../providers/red';
 
@@ -26,17 +28,11 @@ export class ViajeAsignadoPage {
   viajes: any;
   listaViajesAsignados: any[] = [];
   respuesta: any;
-  pIdOperador: string;
-  pIdOperadorArea: string;
   pListaViajeMovil: Array<any>;
-  pMessage: string;
-  pNumeroEconomicoTractocamion: string;
   pOperadorAreaNombre: string;
   pOperadorNombre: string;
   pPasswordOperador: string;
   pResponseCode: string;
-  pTiempoSesionMovilEnHoras: string;
-  pTipoViajeNombre: string;
   pIdOrigen: string;
   llamada: any;
   mensaje: string;
@@ -333,59 +329,61 @@ export class ViajeAsignadoPage {
       }));
   }
 
-  IniciarViaje(idViaje, idOrigen, idConcentrado, indice) {
+  IniciarViaje(idViaje, idOrigen, idConcentrado, noEconomico) {
     Geolocation.getCurrentPosition()
       .then(position => {
         this.lat = position.coords.latitude;
         this.lng = position.coords.longitude;
       });
 
-    let fecha = new Date();
-    let fechaEnviada = fecha.getFullYear() + '-' + (fecha.getMonth() + 1) + '-' + fecha.getDate() + ' ' + fecha.getHours() + ':' + fecha.getMinutes();
-    let coordenadas = this.lat + ',' + this.lng;
+    this.showPrompt(noEconomico);
 
-    if (this.lat == null || this.lng == null) { coordenadas = 'Sin Cobertura'; }
+    // let fecha = new Date();
+    // let fechaEnviada = fecha.getFullYear() + '-' + (fecha.getMonth() + 1) + '-' + fecha.getDate() + ' ' + fecha.getHours() + ':' + fecha.getMinutes();
+    // let coordenadas = this.lat + ',' + this.lng;
 
-    if (this.networkService.noConnection()) {
-      this.dataServices.insertaIniciaTerminaViajeSync(idViaje, idOrigen, idConcentrado, this.username, 0, 5, Device.device.uuid, coordenadas, fechaEnviada).then(() => {
-        this.dataServices.actualizaViajeLocal(5, 0, idViaje).then(response => {
-          let alert = this.alertCtrl.create({
-            subTitle: 'Viaje Iniciado',
-            buttons: ['OK']
-          });
-          alert.present();
+    // if (this.lat == null || this.lng == null) { coordenadas = 'Sin Cobertura'; }
 
-          this.obtieneViajesInternos();
-        });
-      });
-    }
-    else {
-      this.sodisaService.actualizaViaje(idOrigen, idConcentrado, this.username, 0, 5, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
-        // this.sodisaService.actualizaViaje(idOrigen, idConcentrado, 'C55163', 0, 5, 'aa1add0d87db4099', fechaEnviada, coordenadas).subscribe(data => {
-        if (data.pResponseCode == 1) {
-          this.dataServices.openDatabase()
-            .then(() => this.dataServices.actualizaViajeLocal(5, 0, idViaje).then(response => {
-              let alert = this.alertCtrl.create({
-                subTitle: 'Viaje Iniciado',
-                buttons: ['OK']
-              });
-              alert.present();
+    // if (this.networkService.noConnection()) {
+    //   this.dataServices.insertaIniciaTerminaViajeSync(idViaje, idOrigen, idConcentrado, this.username, 0, 5, Device.device.uuid, coordenadas, fechaEnviada).then(() => {
+    //     this.dataServices.actualizaViajeLocal(5, 0, idViaje).then(response => {
+    //       let alert = this.alertCtrl.create({
+    //         subTitle: 'Viaje Iniciado',
+    //         buttons: ['OK']
+    //       });
+    //       alert.present();
 
-              this.obtieneViajesInternos();
-            }));
-        }
-        else {
-          this.interpretaRespuesta(data);
+    //       this.obtieneViajesInternos();
+    //     });
+    //   });
+    // }
+    // else {
+    //   this.sodisaService.actualizaViaje(idOrigen, idConcentrado, this.username, 0, 5, Device.device.uuid, fechaEnviada, coordenadas).subscribe(data => {
+    //     // this.sodisaService.actualizaViaje(idOrigen, idConcentrado, 'C55163', 0, 5, 'aa1add0d87db4099', fechaEnviada, coordenadas).subscribe(data => {
+    //     if (data.pResponseCode == 1) {
+    //       this.dataServices.openDatabase()
+    //         .then(() => this.dataServices.actualizaViajeLocal(5, 0, idViaje).then(response => {
+    //           let alert = this.alertCtrl.create({
+    //             subTitle: 'Viaje Iniciado',
+    //             buttons: ['OK']
+    //           });
+    //           alert.present();
 
-          if (data.pResponseCode == -8) {
-            this.EliminaViajeDesasociado(idViaje, 0);
-          }
+    //           this.obtieneViajesInternos();
+    //         }));
+    //     }
+    //     else {
+    //       this.interpretaRespuesta(data);
 
-          this.obtieneViajesInternos();
-        }
+    //       if (data.pResponseCode == -8) {
+    //         this.EliminaViajeDesasociado(idViaje, 0);
+    //       }
 
-      });
-    }
+    //       this.obtieneViajesInternos();
+    //     }
+
+    //   });
+    // }
   }
 
   TerminarViaje(idViaje, idOrigen, idConcentrado, indice) {
@@ -524,6 +522,67 @@ export class ViajeAsignadoPage {
         });
       });
   }
+
+  showPrompt(noEconomico) {
+    let prompt = this.alertCtrl.create({
+      subTitle: 'Iniciar Viaje',
+      message: "",
+      inputs: [
+        {
+          name: 'odometro',
+          placeholder: 'Odómetro'
+        },
+        {
+          name: 'remolque',
+          placeholder: 'Remolque',
+          value: noEconomico
+        },
+      ],
+      buttons: [
+        {
+          text: 'Iniciar Viaje',
+          cssClass: 'customButton',
+          handler: data => {
+            let respMsg = this.validarDatos(data.odometro, data.remolque);
+            if (respMsg != 'OK') {
+              let toast = this.toastCtrl.create({
+                message: respMsg,
+                duration: 2000,
+                position: 'middle'
+              });
+              toast.present();
+            }
+          }
+        }
+      ]
+    });
+    prompt.present();
+  }
+
+  validarDatos(km, remolque) {
+    let respuesta = '';
+
+    if ((km == null || km.trim() == '') && (remolque == null || remolque.trim() == '')) {
+      return 'Los campos Odómetro y Remolque son obligatorios';
+    }
+    else if (km == null || km.trim() == '') {
+      return 'El campo Odómetro es obligatorio';
+    }
+    else if (remolque == null || remolque.trim() == '') {
+      return 'El campo Remolque es obligatorio';
+    }
+    else if (!/^([0-9])*$/.test(km)) {
+      return 'El campo Odómetro sólo permite números';
+    }
+    else {
+      return 'OK';
+    }
+  }
+
+  redirectViaje(idViaje) {
+    this.navCtrl.push(ViajePage);
+  }
+
 }
 
 

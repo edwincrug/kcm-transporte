@@ -1,9 +1,19 @@
 page-viaje-asignado {
     .fixed{
-position: fixed;
-}
-.button-fab {
-z-index: 100;
-}
+        position: fixed;
+    }
 
+    .button-fab {
+        z-index: 100;
+    }
+
+    ion-card {
+        border-top-width:2px;
+        border-top-style:solid;
+        border-top-color: #F39237
+    }
+
+    .customButton {
+        background-color: #FFE74C
+    }
 }

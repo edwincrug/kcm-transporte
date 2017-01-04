@@ -7,9 +7,9 @@ import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class SodisaService {
-    // url: string = 'http://dev1.sodisamovil.kcm.com.mx/_WebAPI/Operador/';
+    url: string = 'http://dev1.sodisamovil.kcm.com.mx/_WebAPI/Operador/';
 
-    url: string = 'http://qa1.sodisamovil.kcm.com.mx/_WebAPI/Operador/';
+    // url: string = 'http://qa1.sodisamovil.kcm.com.mx/_WebAPI/Operador/';
     data: any;
     parametros: any;
 
